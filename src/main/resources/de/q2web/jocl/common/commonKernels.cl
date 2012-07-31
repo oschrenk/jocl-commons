@@ -3,9 +3,12 @@
  *
  * <p><b>Warning</b>Overwrites the input array!
  *
- * @param inputOutput read/write float array
- * @param length length of input array
- * @param pass counts the passes through theouter loop in the host
+ * @param inputOutput
+ 			read/write float array
+ * @param length
+ 			length of input array
+ * @param pass
+ 			counts the passes through theouter loop in the host
  */
 __kernel void minimumFloat(
 	__global float* inputOutput,
@@ -35,7 +38,7 @@ __kernel void minimumFloat(
 	//	pass = 0, gws = 2
 	//		positionLeft  = (1 << (pass + 1)) * i;
 	//		              = (1 << (0 + 1)) * i;
-	// 		              = 2 * i; with i in {0,1}
+	// 		              = 2 * i; with i in {0..8}
 	//		=> positionLeft is {0, 2}
 	//		positionRight = positionLeft + (1 << pass);
 	//		              = {0,2} + (1 << 0);
@@ -62,4 +65,57 @@ __kernel void minimumFloat(
 					min(((__global float*)inputOutput)[positionLeft], ((__global float*)inputOutput)[positionRight]);
 		}
 	}
+}
+
+/**
+ * Compute the minimum float in an array and find the position of the
+ * minimum in the original array
+ *
+ * <p><b>Warning</b>Overwrites the input array!
+ *
+ * @param inputOutput
+ 			read/write float array
+ * @param length
+ 			length of input array
+ * @param pass
+ 			counts the passes through theouter loop in the host
+ */
+__kernel void minimumThresholdFloat(
+	__global float* inputOutput,
+	__global uint* iterator,
+	const uint length,
+	const uint pass
+) {
+	uint i = get_global_id(0);
+
+	uint positionLeft = (1 << (pass + 1)) * i;
+	uint positionRight = positionLeft + (1 << pass);
+	if (positionRight < length)
+	{
+		if (positionLeft < length)
+		{
+
+			if ( ((__global float*)inputOutput)[positionLeft] < ((__global float*)inputOutput)[positionRight] ) {
+
+			} else {
+				((__global float*)inputOutput)[positionLeft] = ((__global float*)inputOutput)[positionRight];
+				((__global uint*)iterator)[positionLeft] = ((__global uint*)iterator)[positionRight];
+			}
+
+		}
+	}
+}
+
+/**
+ * Fill an array of uints with the globalId; creating an iterator array starting
+ * with <code>0</code>
+ *
+ * @param inputOutput
+ 			read/write uint array
+ */
+__kernel void iterator(
+	__global uint* inputOutput
+) {
+	uint i = get_global_id(0);
+	((__global uint*)inputOutput)[i] = i;
 }

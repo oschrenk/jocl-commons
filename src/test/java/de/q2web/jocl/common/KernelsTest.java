@@ -5,6 +5,7 @@ import static org.jocl.CL.clReleaseCommandQueue;
 import static org.jocl.CL.clReleaseContext;
 import static org.junit.Assert.assertEquals;
 
+import org.jocl.CL;
 import org.jocl.cl_command_queue;
 import org.jocl.cl_context;
 import org.jocl.cl_device_id;
@@ -13,9 +14,16 @@ import org.jocl.utils.CommandQueues;
 import org.jocl.utils.Contexts;
 import org.jocl.utils.Devices;
 import org.jocl.utils.Platforms;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class KernelsTest {
+
+	@BeforeClass
+	public static void setUp() {
+		// Enable exceptions and subsequently omit error checks in this sample
+		CL.setExceptionsEnabled(true);
+	}
 
 	@Test
 	public void testMinimum() {
@@ -31,6 +39,75 @@ public class KernelsTest {
 					expectedMinimum, 56.7f, 67.8f, 78.9f };
 			final float actualMinimum = Kernels.minimum(context, queue, floats);
 			assertEquals(expectedMinimum, actualMinimum, 0.0);
+
+		} finally {
+			clReleaseCommandQueue(queue);
+			clReleaseContext(context);
+		}
+	}
+
+	@Test
+	public void testMinimumThreshold() {
+
+		cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		cl_device_id deviceId = Devices.getDevices(platformId,
+				CL_DEVICE_TYPE_GPU).get(0);
+		cl_context context = Contexts.create(platformId, deviceId);
+		cl_command_queue queue = CommandQueues.create(context, deviceId);
+		try {
+			final float expectedMinimum = 10.0f;
+			final float epsilon = expectedMinimum + 1;
+			final float[] floats = new float[] { 70f, 60f,
+					expectedMinimum, 40f, 50f, 80f };
+			final int minimumPosition = Kernels.minimumThresholdPosition(
+					context, queue, floats, epsilon);
+			assertEquals(2, minimumPosition);
+
+		} finally {
+			clReleaseCommandQueue(queue);
+			clReleaseContext(context);
+		}
+	}
+	
+	@Test
+	public void testMinimumThresholdPosAtEnd() {
+
+		cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		cl_device_id deviceId = Devices.getDevices(platformId,
+				CL_DEVICE_TYPE_GPU).get(0);
+		cl_context context = Contexts.create(platformId, deviceId);
+		cl_command_queue queue = CommandQueues.create(context, deviceId);
+		try {
+			final float expectedMinimum = 10.0f;
+			final float epsilon = expectedMinimum + 1;
+			final float[] floats = new float[] { 70f, 60f,
+					90f, 40f, 50f, 80f, expectedMinimum };
+			final int minimumPosition = Kernels.minimumThresholdPosition(
+					context, queue, floats, epsilon);
+			assertEquals(floats.length-1, minimumPosition);
+
+		} finally {
+			clReleaseCommandQueue(queue);
+			clReleaseContext(context);
+		}
+	}
+	
+	@Test
+	public void testMinimumThresholdMultipleIdenticalValues() {
+
+		cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		cl_device_id deviceId = Devices.getDevices(platformId,
+				CL_DEVICE_TYPE_GPU).get(0);
+		cl_context context = Contexts.create(platformId, deviceId);
+		cl_command_queue queue = CommandQueues.create(context, deviceId);
+		try {
+			final float expectedMinimum = 10.0f;
+			final float epsilon = expectedMinimum + 1;
+			final float[] floats = new float[] { 70f, 60f,
+					expectedMinimum, 40f, 50f, expectedMinimum, 30f };
+			final int minimumPosition = Kernels.minimumThresholdPosition(
+					context, queue, floats, epsilon);
+			assertEquals(5, minimumPosition);
 
 		} finally {
 			clReleaseCommandQueue(queue);
