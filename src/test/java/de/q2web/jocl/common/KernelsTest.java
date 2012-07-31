@@ -15,7 +15,7 @@ import org.jocl.utils.Devices;
 import org.jocl.utils.Platforms;
 import org.junit.Test;
 
-public class SearchTest {
+public class KernelsTest {
 
 	@Test
 	public void testMinimum() {
@@ -27,15 +27,15 @@ public class SearchTest {
 		cl_command_queue queue = CommandQueues.create(context, deviceId);
 		try {
 			final float expectedMinimum = 10.0f;
-			final float[] floats = new float[] { 784.5f, 45.6f, expectedMinimum,
-					56.7f, 67.8f, 78.9f };
-			final float actualMinimum = Search.minimum(context, queue, floats);
+			final float[] floats = new float[] { 784.5f, 45.6f,
+					expectedMinimum, 56.7f, 67.8f, 78.9f };
+			final float actualMinimum = Kernels.minimum(context, queue, floats);
 			assertEquals(expectedMinimum, actualMinimum, 0.0);
 
 		} finally {
 			clReleaseCommandQueue(queue);
 			clReleaseContext(context);
 		}
-
 	}
+
 }

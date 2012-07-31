@@ -26,12 +26,13 @@ import org.jocl.cl_program;
 import de.q2web.jocl.util.Integers;
 import de.q2web.jocl.util.Resources;
 
-public class Search {
+public class Kernels {
 
-	private static final String MINIMUM_FLOAT = "minimumFloat";
-	private static final String SEARCH = Resources
-			.convertStreamToString(Search.class
-					.getResourceAsStream("search.cl"));
+	private static final String KERNEL_MINIMUM_FLOAT = "minimumFloat";
+
+	private static final String SOURCE = Resources
+			.convertStreamToString(Kernels.class
+					.getResourceAsStream("commonKernels.cl"));
 
 	/**
 	 * <code>minimumFloat</code> computes the minimum float in the input array.
@@ -64,9 +65,10 @@ public class Search {
 		try {
 			int length = floats.length;
 			program = clCreateProgramWithSource(context, 1,
-					new String[] { SEARCH }, null, null);
+					new String[] { SOURCE }, null, null);
+
 			clBuildProgram(program, 0, null, null, null, null);
-			kernel = clCreateKernel(program, MINIMUM_FLOAT, null);
+			kernel = clCreateKernel(program, KERNEL_MINIMUM_FLOAT, null);
 
 			Pointer floatsPointer = Pointer.to(floats);
 			memObject = new cl_mem[1];
@@ -80,7 +82,7 @@ public class Search {
 
 			final long[] localWorkSize = new long[] { 1 };
 
-			int nn = Integers.binaryLog(length);
+			int nn = Integers.nearestBinary(length) / 2;
 			for (int j = 0; j < nn; j++) {
 				long[] globalWorkSize = new long[] { (1 << (nn - j - 1)) };
 				clSetKernelArg(kernel, 2, Sizeof.cl_uint,
