@@ -5,6 +5,8 @@ package de.q2web.jocl.util;
  */
 public class Arrays {
 
+	private static final int NOT_FOUND = -1;
+
 	/**
 	 * Prefilled.
 	 * 
@@ -134,7 +136,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMinimum(byte[] values) {
 		byte min = Byte.MAX_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = NOT_FOUND;
 		for (int i = 0; i < values.length; i++) {
 			final byte v = values[i];
 			if (v < min) {
@@ -154,7 +156,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMinimum(short[] values) {
 		short min = Short.MAX_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = NOT_FOUND;
 		for (int i = 0; i < values.length; i++) {
 			final short v = values[i];
 			if (v < min) {
@@ -174,7 +176,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMinimum(int[] values) {
 		int min = Integer.MAX_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = NOT_FOUND;
 		for (int i = 0; i < values.length; i++) {
 			final int v = values[i];
 			if (v < min) {
@@ -194,7 +196,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMinimum(long[] values) {
 		long min = Long.MAX_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = NOT_FOUND;
 		for (int i = 0; i < values.length; i++) {
 			final long v = values[i];
 			if (v < min) {
@@ -214,7 +216,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMinimum(float[] values) {
 		float min = Float.MAX_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = -1;
 		for (int i = 0; i < values.length; i++) {
 			final float f = values[i];
 			if (f < min) {
@@ -234,7 +236,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMinimum(double[] values) {
 		double min = Double.MAX_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = NOT_FOUND;
 		for (int i = 0; i < values.length; i++) {
 			final double v = values[i];
 			if (v < min) {
@@ -254,7 +256,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMaximum(byte[] values) {
 		byte max = Byte.MIN_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = NOT_FOUND;
 		for (int i = 0; i < values.length; i++) {
 			final byte v = values[i];
 			if (v > max) {
@@ -274,7 +276,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMaximum(short[] values) {
 		short max = Short.MIN_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = NOT_FOUND;
 		for (int i = 0; i < values.length; i++) {
 			final short v = values[i];
 			if (v > max) {
@@ -294,7 +296,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMaximum(int[] values) {
 		int max = Integer.MIN_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = NOT_FOUND;
 		for (int i = 0; i < values.length; i++) {
 			final int v = values[i];
 			if (v > max) {
@@ -314,7 +316,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMaximum(long[] values) {
 		long max = Long.MIN_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = NOT_FOUND;
 		for (int i = 0; i < values.length; i++) {
 			final long v = values[i];
 			if (v > max) {
@@ -334,7 +336,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMaximum(float[] values) {
 		float max = Float.MIN_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = NOT_FOUND;
 		for (int i = 0; i < values.length; i++) {
 			final float f = values[i];
 			if (f > max) {
@@ -354,7 +356,7 @@ public class Arrays {
 	 */
 	public static final int positionOfMaximum(double[] values) {
 		double max = Double.MIN_VALUE;
-		int pos = Integer.MAX_VALUE;
+		int pos = NOT_FOUND;
 		for (int i = 0; i < values.length; i++) {
 			final double v = values[i];
 			if (v > max) {
