@@ -88,12 +88,12 @@ public class Kernels {
 
 			final long[] localWorkSize = new long[] { 1 };
 
-			int nn = Integers.nearestBinary(length) / 2;
-			for (int pass = 0; pass < nn; pass++) {
-				long[] globalWorkSize = new long[] { (1 << (nn - pass - 1)) };
+			long globalWorkSize = Integers.nearestBinary(length);
+			for (int pass = 0; globalWorkSize > 1; pass++) {
+				globalWorkSize = globalWorkSize >> 1 ;
 				clSetKernelArg(kernel, 2, Sizeof.cl_uint,
 						Pointer.to(new int[] { pass }));
-				clEnqueueNDRangeKernel(queue, kernel, 1, null, globalWorkSize,
+				clEnqueueNDRangeKernel(queue, kernel, 1, null, new long[] {globalWorkSize},
 						localWorkSize, 0, null, null);
 				clEnqueueBarrier(queue);
 			}
