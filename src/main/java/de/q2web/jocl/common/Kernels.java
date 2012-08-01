@@ -28,13 +28,13 @@ import de.q2web.jocl.util.Resources;
 
 public class Kernels {
 
+	private static final long[] DEFAULT_LOCAL_WORKSIZE = new long[] { 1 };
+
 	private static final int NOT_FOUND = -1;
 
-	private static final String KERNEL_MINIMUM_FLOAT = "minimumFloat";
-
-	private static final String KERNEL_MINIMUM_THRESHOLD_FLOAT = "minimumThresholdFloat";
-
 	private static final String KERNEL_ITERATOR = "iterator";
+	private static final String KERNEL_MINIMUM_FLOAT = "minimumFloat";
+	private static final String KERNEL_MINIMUM_THRESHOLD_FLOAT = "minimumThresholdFloat";
 
 	private static final String SOURCE = Resources
 			.convertStreamToString(Kernels.class
@@ -63,20 +63,20 @@ public class Kernels {
 	 *            input array
 	 * @return the minimum
 	 */
-	public static float minimum(cl_context context, cl_command_queue queue,
-			float[] floats) {
+	public static float minimum(final cl_context context,
+			final cl_command_queue queue, final float[] floats) {
 		cl_program program = null;
 		cl_kernel kernel = null;
 		cl_mem[] memObject = null;
 		try {
-			int length = floats.length;
+			final int length = floats.length;
 			program = clCreateProgramWithSource(context, 1,
 					new String[] { SOURCE }, null, null);
 
 			clBuildProgram(program, 0, null, null, null, null);
 			kernel = clCreateKernel(program, KERNEL_MINIMUM_FLOAT, null);
 
-			Pointer floatsPointer = Pointer.to(floats);
+			final Pointer floatsPointer = Pointer.to(floats);
 			memObject = new cl_mem[1];
 			memObject[0] = clCreateBuffer(context, CL_MEM_READ_WRITE
 					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_float * length,
@@ -86,21 +86,19 @@ public class Kernels {
 			clSetKernelArg(kernel, 1, Sizeof.cl_uint,
 					Pointer.to(new int[] { length }));
 
-			final long[] localWorkSize = new long[] { 1 };
-
 			long globalWorkSize = Integers.nearestBinary(length);
 			for (int pass = 0; globalWorkSize > 1; pass++) {
-				globalWorkSize = globalWorkSize >> 1 ;
 				clSetKernelArg(kernel, 2, Sizeof.cl_uint,
 						Pointer.to(new int[] { pass }));
-				clEnqueueNDRangeKernel(queue, kernel, 1, null, new long[] {globalWorkSize},
-						localWorkSize, 0, null, null);
+				clEnqueueNDRangeKernel(queue, kernel, 1, null,
+						new long[] { globalWorkSize >>= 1 },
+						DEFAULT_LOCAL_WORKSIZE, 0, null, null);
 				clEnqueueBarrier(queue);
 			}
 
 			// Read only the first float
-			float[] result = new float[1];
-			Pointer resultPointer = Pointer.to(result);
+			final float[] result = new float[1];
+			final Pointer resultPointer = Pointer.to(result);
 			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0,
 					Sizeof.cl_float, resultPointer, 0, null, null);
 			return result[0];
@@ -114,13 +112,12 @@ public class Kernels {
 	}
 
 	/**
-	 * Returns the position of the minimum value in an array, if it is below the
-	 * threshold <code>epsilon</code> or <code>-1</code>if the found minimum is
-	 * greater or equal to given <code>epsilon</code>.
+	 * Returns the position of the minimum value in an array if it is below a
+	 * certain threshold otherwise <code>-1</code>
 	 * 
 	 * <p>
 	 * If there are multiple minima (identical values), then the position of the
-	 * last minimum is returned.
+	 * first minimum is returned.
 	 * 
 	 * @param context
 	 *            the context
@@ -128,19 +125,20 @@ public class Kernels {
 	 *            the queue
 	 * @param floats
 	 *            the floats
-	 * @param epsilon
-	 *            the epsilon
-	 * @return the position if the found minimum is below the given epsilon,
+	 * @param threshold
+	 *            the threshold
+	 * @return the position if the found minimum is below the given threshold,
 	 *         otherwise <code>-1</code>
 	 */
-	public static int minimumThresholdPosition(cl_context context,
-			cl_command_queue queue, float[] floats, float epsilon) {
+	public static int positionOfMinimum(final cl_context context,
+			final cl_command_queue queue, final float[] floats,
+			final float threshold) {
 		cl_program program = null;
 		cl_kernel kernelIterator = null;
 		cl_kernel kernelMinimumThreshold = null;
 		cl_mem[] memObject = null;
 		try {
-			int length = floats.length;
+			final int length = floats.length;
 			program = clCreateProgramWithSource(context, 1,
 					new String[] { SOURCE }, null, null);
 			clBuildProgram(program, 0, null, null, null, null);
@@ -148,21 +146,19 @@ public class Kernels {
 			kernelMinimumThreshold = clCreateKernel(program,
 					KERNEL_MINIMUM_THRESHOLD_FLOAT, null);
 
-			Pointer floatsPointer = Pointer.to(floats);
 			memObject = new cl_mem[2];
 			memObject[0] = clCreateBuffer(context, CL_MEM_READ_WRITE
 					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_float * length,
-					floatsPointer, null);
+					Pointer.to(floats), null);
 			memObject[1] = clCreateBuffer(context, CL_MEM_READ_WRITE,
 					Sizeof.cl_uint * length, null, null);
-
-			final long[] localWorkSize = new long[] { 1 };
 
 			// first create an iterator array
 			clSetKernelArg(kernelIterator, 0, Sizeof.cl_mem,
 					Pointer.to(memObject[1]));
 			clEnqueueNDRangeKernel(queue, kernelIterator, 1, null,
-					new long[] { length }, localWorkSize, 0, null, null);
+					new long[] { length }, DEFAULT_LOCAL_WORKSIZE, 0, null,
+					null);
 			// make sure iterator array is filled
 			clEnqueueBarrier(queue);
 
@@ -173,28 +169,26 @@ public class Kernels {
 			clSetKernelArg(kernelMinimumThreshold, 2, Sizeof.cl_uint,
 					Pointer.to(new int[] { length }));
 
-			int nn = Integers.nearestBinary(length) / 2;
-			for (int pass = 0; pass < nn; pass++) {
-				long[] globalWorkSize = new long[] { (1 << (nn - pass - 1)) };
+			long globalWorkSize = Integers.nearestBinary(length);
+			for (int pass = 0; globalWorkSize > 1; pass++) {
 				clSetKernelArg(kernelMinimumThreshold, 3, Sizeof.cl_uint,
 						Pointer.to(new int[] { pass }));
 				clEnqueueNDRangeKernel(queue, kernelMinimumThreshold, 1, null,
-						globalWorkSize, localWorkSize, 0, null, null);
+						new long[] { globalWorkSize >>= 1 },
+						DEFAULT_LOCAL_WORKSIZE, 0, null, null);
 				clEnqueueBarrier(queue);
 			}
 
 			// Read only the first values
-			float[] resultFloat = new float[1];
-			Pointer resultFloatPointer = Pointer.to(resultFloat);
+			final float[] resultFloat = new float[1];
 			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0,
-					Sizeof.cl_float, resultFloatPointer, 0, null, null);
+					Sizeof.cl_float, Pointer.to(resultFloat), 0, null, null);
 
-			int[] resultPosition = new int[1];
-			Pointer resultPositionPointer = Pointer.to(resultPosition);
+			final int[] resultPosition = new int[1];
 			clEnqueueReadBuffer(queue, memObject[1], CL_TRUE, 0,
-					Sizeof.cl_uint, resultPositionPointer, 0, null, null);
+					Sizeof.cl_uint, Pointer.to(resultPosition), 0, null, null);
 
-			if (resultFloat[0] < epsilon) {
+			if (resultFloat[0] < threshold) {
 				return resultPosition[0];
 			}
 
@@ -207,55 +201,5 @@ public class Kernels {
 			clReleaseKernel(kernelMinimumThreshold);
 			clReleaseProgram(program);
 		}
-
 	}
-
-	public static float iterator(cl_context context, cl_command_queue queue,
-			int length, int offsetValue) {
-		cl_program program = null;
-		cl_kernel kernel = null;
-		cl_mem[] memObject = null;
-		try {
-			program = clCreateProgramWithSource(context, 1,
-					new String[] { SOURCE }, null, null);
-			clBuildProgram(program, 0, null, null, null, null);
-			kernel = clCreateKernel(program, KERNEL_ITERATOR, null);
-
-			Pointer intsPointer = Pointer.to(new int[length]);
-			memObject = new cl_mem[1];
-			memObject[0] = clCreateBuffer(context, CL_MEM_READ_WRITE
-					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_int * length,
-					intsPointer, null);
-
-			clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memObject[0]));
-			clSetKernelArg(kernel, 1, Sizeof.cl_uint,
-					Pointer.to(new int[] { length }));
-
-			final long[] localWorkSize = new long[] { 1 };
-
-			int nn = Integers.binaryLog(length);
-			for (int j = 0; j < nn; j++) {
-				long[] globalWorkSize = new long[] { (1 << (nn - j - 1)) };
-				clSetKernelArg(kernel, 2, Sizeof.cl_uint,
-						Pointer.to(new int[] { j }));
-				clEnqueueNDRangeKernel(queue, kernel, 1, null, globalWorkSize,
-						localWorkSize, 0, null, null);
-				clEnqueueBarrier(queue);
-			}
-
-			// Read only the first float
-			float[] result = new float[1];
-			Pointer resultPointer = Pointer.to(result);
-			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0,
-					Sizeof.cl_float, resultPointer, 0, null, null);
-			return result[0];
-		} finally {
-			// Release kernel, program, and memory objects
-			clReleaseMemObject(memObject[0]);
-			clReleaseKernel(kernel);
-			clReleaseProgram(program);
-		}
-
-	}
-
 }

@@ -26,13 +26,13 @@ public class KernelsTest {
 	}
 
 	@Test
-	public void testMinimum() {
+	public void testMinimumFloat() {
 
-		cl_platform_id platformId = Platforms.getPlatforms().get(0);
-		cl_device_id deviceId = Devices.getDevices(platformId,
+		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		final cl_device_id deviceId = Devices.getDevices(platformId,
 				CL_DEVICE_TYPE_GPU).get(0);
-		cl_context context = Contexts.create(platformId, deviceId);
-		cl_command_queue queue = CommandQueues.create(context, deviceId);
+		final cl_context context = Contexts.create(platformId, deviceId);
+		final cl_command_queue queue = CommandQueues.create(context, deviceId);
 		try {
 			final float expectedMinimum = 10.0f;
 			final float[] floats = new float[] { 784.5f, 45.6f,
@@ -47,20 +47,20 @@ public class KernelsTest {
 	}
 
 	@Test
-	public void testMinimumThreshold() {
+	public void testPositionOfMinimumWithThreshold() {
 
-		cl_platform_id platformId = Platforms.getPlatforms().get(0);
-		cl_device_id deviceId = Devices.getDevices(platformId,
+		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		final cl_device_id deviceId = Devices.getDevices(platformId,
 				CL_DEVICE_TYPE_GPU).get(0);
-		cl_context context = Contexts.create(platformId, deviceId);
-		cl_command_queue queue = CommandQueues.create(context, deviceId);
+		final cl_context context = Contexts.create(platformId, deviceId);
+		final cl_command_queue queue = CommandQueues.create(context, deviceId);
 		try {
 			final float expectedMinimum = 10.0f;
 			final float epsilon = expectedMinimum + 1;
-			final float[] floats = new float[] { 70f, 60f,
-					expectedMinimum, 40f, 50f, 80f };
-			final int minimumPosition = Kernels.minimumThresholdPosition(
-					context, queue, floats, epsilon);
+			final float[] floats = new float[] { 70f, 60f, expectedMinimum,
+					40f, 50f, 80f };
+			final int minimumPosition = Kernels.positionOfMinimum(context,
+					queue, floats, epsilon);
 			assertEquals(2, minimumPosition);
 
 		} finally {
@@ -68,46 +68,46 @@ public class KernelsTest {
 			clReleaseContext(context);
 		}
 	}
-	
-	@Test
-	public void testMinimumThresholdPosAtEnd() {
 
-		cl_platform_id platformId = Platforms.getPlatforms().get(0);
-		cl_device_id deviceId = Devices.getDevices(platformId,
+	@Test
+	public void testPositionOfMinimumWithThresholdMinimumAtEnd() {
+
+		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		final cl_device_id deviceId = Devices.getDevices(platformId,
 				CL_DEVICE_TYPE_GPU).get(0);
-		cl_context context = Contexts.create(platformId, deviceId);
-		cl_command_queue queue = CommandQueues.create(context, deviceId);
+		final cl_context context = Contexts.create(platformId, deviceId);
+		final cl_command_queue queue = CommandQueues.create(context, deviceId);
 		try {
 			final float expectedMinimum = 10.0f;
-			final float epsilon = expectedMinimum + 1;
-			final float[] floats = new float[] { 70f, 60f,
-					90f, 40f, 50f, 80f, expectedMinimum };
-			final int minimumPosition = Kernels.minimumThresholdPosition(
-					context, queue, floats, epsilon);
-			assertEquals(floats.length-1, minimumPosition);
+			final float threshold = expectedMinimum + 1;
+			final float[] floats = new float[] { 70f, 60f, 90f, 40f, 50f, 80f,
+					expectedMinimum };
+			final int minimumPosition = Kernels.positionOfMinimum(context,
+					queue, floats, threshold);
+			assertEquals(floats.length - 1, minimumPosition);
 
 		} finally {
 			clReleaseCommandQueue(queue);
 			clReleaseContext(context);
 		}
 	}
-	
-	@Test
-	public void testMinimumThresholdMultipleIdenticalValues() {
 
-		cl_platform_id platformId = Platforms.getPlatforms().get(0);
-		cl_device_id deviceId = Devices.getDevices(platformId,
+	@Test
+	public void testPositionOfMinimumWithThresholdMultipleIdenticalMinima() {
+
+		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		final cl_device_id deviceId = Devices.getDevices(platformId,
 				CL_DEVICE_TYPE_GPU).get(0);
-		cl_context context = Contexts.create(platformId, deviceId);
-		cl_command_queue queue = CommandQueues.create(context, deviceId);
+		final cl_context context = Contexts.create(platformId, deviceId);
+		final cl_command_queue queue = CommandQueues.create(context, deviceId);
 		try {
 			final float expectedMinimum = 10.0f;
 			final float epsilon = expectedMinimum + 1;
-			final float[] floats = new float[] { 70f, 60f,
-					expectedMinimum, 40f, 50f, expectedMinimum, 30f };
-			final int minimumPosition = Kernels.minimumThresholdPosition(
-					context, queue, floats, epsilon);
-			assertEquals(5, minimumPosition);
+			final float[] floats = new float[] { 70f, 60f, expectedMinimum,
+					40f, 50f, expectedMinimum, 30f };
+			final int minimumPosition = Kernels.positionOfMinimum(context,
+					queue, floats, epsilon);
+			assertEquals(2, minimumPosition);
 
 		} finally {
 			clReleaseCommandQueue(queue);
