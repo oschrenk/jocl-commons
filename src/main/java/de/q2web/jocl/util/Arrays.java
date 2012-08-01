@@ -1,8 +1,7 @@
 package de.q2web.jocl.util;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class Arrays.
+ * Offers static helper methods for arrays
  */
 public class Arrays {
 
