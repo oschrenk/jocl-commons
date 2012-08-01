@@ -3,7 +3,7 @@
  *
  * <p><b>Warning</b>Overwrites the input array!
  *
- * @param inputOutput
+ * @param io
  			read/write float array
  * @param length
  			length of input array
@@ -11,20 +11,19 @@
  			counts the passes through theouter loop in the host
  */
 __kernel void minimumFloat(
-	__global float* inputOutput,
+	__global float* io,
 	const uint length,
 	const uint pass
 ) {
 	// HostCode
-	//	int nn = Integers.nearestBinary(length) / 2;
-	//	for (int j = 0; j < nn; j++) {
-	//		long[] globalWorkSize = new long[] { (1 << (nn - j - 1)) };
-	//		clSetKernelArg(kernel, 2, Sizeof.cl_uint,
-	//				Pointer.to(new int[] { j }));
-	//		clEnqueueNDRangeKernel(queue, kernel, 1, null, globalWorkSize,
-	//				localWorkSize, 0, null, null);
-	//		clEnqueueBarrier(queue);
-	//	}
+	// 	long globalWorkSize = Integers.nearestBinary(length);
+	// 	for (int pass = 0; globalWorkSize > 1; pass++) {
+	// 		clSetKernelArg(kernel, 2, Sizeof.cl_uint,
+	// 				Pointer.to(new int[] { pass }));
+	// 		clEnqueueNDRangeKernel(queue, kernel, 1, null, new long[] {globalWorkSize >>= 1},
+	// 				localWorkSize, 0, null, null);
+	// 		clEnqueueBarrier(queue);
+	// 	}
 
 	// Example:
 
@@ -33,37 +32,30 @@ __kernel void minimumFloat(
 	//		float[] floats = new float[] { 784.5f, 45.6f, expectedMinimum, 56.7f, 67.8f, 78.9f };
 
 	// length = 6
-	// nn = 4
+	// globalWorkSize = 4
 	// j = 0
 	//	pass = 0, gws = 2
-	//		positionLeft  = (1 << (pass + 1)) * i;
+	//		left  = (1 << (pass + 1)) * i;
 	//		              = (1 << (0 + 1)) * i;
 	// 		              = 2 * i; with i in {0..8}
-	//		=> positionLeft is {0, 2}
-	//		positionRight = positionLeft + (1 << pass);
+	//		=> left is {0, 2}
+	//		right = left + (1 << pass);
 	//		              = {0,2} + (1 << 0);
 	//		              = {0,2} + 1;
-	//		=> positionRight is {1, 3}
+	//		=> right is {1, 3}
 	//
-	//		positionRight < length IS true
-	//		positionLeft < length IS true
+	//		right < length IS true
+	//		left < length IS true
 	//
-	//		=> io[positionLeft] = min(io[positionLeft], io[positionRight])
+	//		=> io[left] = min(io[left], io[right])
 	// j = 1
 	//	pass = 1, gws = 2
 
-
-	uint i = get_global_id(0);
-
-	uint positionLeft = (1 << (pass + 1)) * i;
-	uint positionRight = positionLeft + (1 << pass);
-	if (positionRight < length)
-	{
-		if (positionLeft < length)
-		{
-			((__global float*)inputOutput)[positionLeft] =
-					min(((__global float*)inputOutput)[positionLeft], ((__global float*)inputOutput)[positionRight]);
-		}
+	uint left = (1 << (pass + 1)) * get_global_id(0);
+	uint right = left + (1 << pass);
+	if (right < length && left < length) {
+		((__global float*)io)[left] =
+			min(((__global float*)io)[left], ((__global float*)io)[right]);
 	}
 }
 
@@ -73,7 +65,7 @@ __kernel void minimumFloat(
  *
  * <p><b>Warning</b>Overwrites the input array!
  *
- * @param inputOutput
+ * @param io
  			read/write float array
  * @param length
  			length of input array
@@ -81,27 +73,17 @@ __kernel void minimumFloat(
  			counts the passes through theouter loop in the host
  */
 __kernel void minimumThresholdFloat(
-	__global float* inputOutput,
+	__global float* io,
 	__global uint* iterator,
 	const uint length,
 	const uint pass
 ) {
-	uint i = get_global_id(0);
-
-	uint positionLeft = (1 << (pass + 1)) * i;
-	uint positionRight = positionLeft + (1 << pass);
-	if (positionRight < length)
-	{
-		if (positionLeft < length)
-		{
-
-			if ( ((__global float*)inputOutput)[positionLeft] < ((__global float*)inputOutput)[positionRight] ) {
-
-			} else {
-				((__global float*)inputOutput)[positionLeft] = ((__global float*)inputOutput)[positionRight];
-				((__global uint*)iterator)[positionLeft] = ((__global uint*)iterator)[positionRight];
-			}
-
+	uint left = (1 << (pass + 1)) * get_global_id(0);
+	uint right = left + (1 << pass);
+	if (right < length && left < length) {
+		if ( ((__global float*)io)[right] < ((__global float*)io)[left] ) {
+			((__global float*)io)[left] = ((__global float*)io)[right];
+			((__global uint*)iterator)[left] = ((__global uint*)iterator)[right];
 		}
 	}
 }
@@ -110,12 +92,12 @@ __kernel void minimumThresholdFloat(
  * Fill an array of uints with the globalId; creating an iterator array starting
  * with <code>0</code>
  *
- * @param inputOutput
+ * @param io
  			read/write uint array
  */
 __kernel void iterator(
-	__global uint* inputOutput
+	__global uint* io
 ) {
 	uint i = get_global_id(0);
-	((__global uint*)inputOutput)[i] = i;
+	((__global uint*)io)[i] = i;
 }
