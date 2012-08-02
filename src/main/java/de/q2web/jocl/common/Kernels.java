@@ -32,36 +32,28 @@ public class Kernels {
 
 	private static final int NOT_FOUND = -1;
 
-	private static final String KERNEL_ITERATOR = "iterator";
 	private static final String KERNEL_MINIMUM_FLOAT = "minimumFloat";
-	private static final String KERNEL_MINIMUM_THRESHOLD_FLOAT = "minimumThresholdFloat";
+	private static final String KERNEL_MINIMUM_FLOAT_WITH_POSITION = "minimumWithPositionFloat";
 
 	private static final String SOURCE = Resources
 			.convertStreamToString(Kernels.class
 					.getResourceAsStream("commonKernels.cl"));
 
 	/**
-	 * <code>minimumFloat</code> computes the minimum float in the input array.
+	 * Returns the the minimum value and the position of that minimum of a float
+	 * array
 	 * 
 	 * <p>
-	 * <b>Warning</b>Overwrites the input array in the device!
-	 * 
-	 * <p>
-	 * It's time complexity is <code>O(log n)</code>. It creates
-	 * <code>ceil(log_2(length))</code> comparing two array entries. On the the
-	 * first pass it compares <code>a[0] with <code>a[1]</code>,
-	 * <code>...</code>, <code>a[n-1]</code> with a[n]</code>, on second pass
-	 * <code>a[0] with <code>a[3]</code>, <code>...</code>, <code>a[n-3]</code>
-	 * with a[n]</code> and so on.
-	 * 
+	 * If there are multiple minima (identical values), then the position of the
+	 * first minimum is returned.
 	 * 
 	 * @param context
-	 *            OpenCl Context
+	 *            the context
 	 * @param queue
-	 *            OpenCl CommandQuue
+	 *            the queue
 	 * @param floats
-	 *            input array
-	 * @return the minimum
+	 *            the floats
+	 * @return the position of the minimum
 	 */
 	public static float minimum(final cl_context context,
 			final cl_command_queue queue, final float[] floats) {
@@ -112,7 +104,70 @@ public class Kernels {
 	}
 
 	/**
-	 * Returns the position of the minimum value in an array if it is below a
+	 * Returns the the minimum value and the position of that minimum of a float
+	 * array
+	 * 
+	 * <p>
+	 * If there are multiple minima (identical values), then the position of the
+	 * first minimum is returned.
+	 * 
+	 * @param context
+	 *            the context
+	 * @param queue
+	 *            the queue
+	 * @param floats
+	 *            the floats
+	 * @return the position of the minimum
+	 */
+	public static MinimumPosition minimumWithPosition(final cl_context context,
+			final cl_command_queue queue, final float[] floats) {
+		cl_program program = null;
+		cl_kernel kernel = null;
+		cl_mem[] memObject = null;
+		try {
+			final int length = floats.length;
+			program = clCreateProgramWithSource(context, 1,
+					new String[] { SOURCE }, null, null);
+			clBuildProgram(program, 0, null, null, null, null);
+			kernel = clCreateKernel(program,
+					KERNEL_MINIMUM_FLOAT_WITH_POSITION, null);
+
+			memObject = new cl_mem[1];
+			memObject[0] = clCreateBuffer(context, CL_MEM_READ_WRITE
+					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_float * length,
+					Pointer.to(floats), null);
+
+			clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memObject[0]));
+			clSetKernelArg(kernel, 1, Sizeof.cl_uint,
+					Pointer.to(new int[] { length }));
+
+			long globalWorkSize = Integers.nearestBinary(length);
+			for (int pass = 0; globalWorkSize > 1; pass++) {
+				clSetKernelArg(kernel, 2, Sizeof.cl_uint,
+						Pointer.to(new int[] { pass }));
+				clEnqueueNDRangeKernel(queue, kernel, 1, null,
+						new long[] { globalWorkSize >>= 1 },
+						DEFAULT_LOCAL_WORKSIZE, 0, null, null);
+				clEnqueueBarrier(queue);
+			}
+
+			final float[] values = new float[2];
+			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0,
+					Sizeof.cl_float * 2, Pointer.to(values), 0, null, null);
+
+			return new MinimumPosition(values[0], (int) values[1]);
+
+		} finally {
+			// Release memory objects, kernel and program
+			clReleaseMemObject(memObject[0]);
+			clReleaseKernel(kernel);
+			clReleaseProgram(program);
+		}
+	}
+
+	/**
+	 * Returns the position of the minimum value of a
+	 * <code>float<code> array if it is below a
 	 * certain threshold otherwise <code>-1</code>
 	 * 
 	 * <p>
@@ -133,73 +188,53 @@ public class Kernels {
 	public static int positionOfMinimum(final cl_context context,
 			final cl_command_queue queue, final float[] floats,
 			final float threshold) {
-		cl_program program = null;
-		cl_kernel kernelIterator = null;
-		cl_kernel kernelMinimumThreshold = null;
-		cl_mem[] memObject = null;
-		try {
-			final int length = floats.length;
-			program = clCreateProgramWithSource(context, 1,
-					new String[] { SOURCE }, null, null);
-			clBuildProgram(program, 0, null, null, null, null);
-			kernelIterator = clCreateKernel(program, KERNEL_ITERATOR, null);
-			kernelMinimumThreshold = clCreateKernel(program,
-					KERNEL_MINIMUM_THRESHOLD_FLOAT, null);
-
-			memObject = new cl_mem[2];
-			memObject[0] = clCreateBuffer(context, CL_MEM_READ_WRITE
-					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_float * length,
-					Pointer.to(floats), null);
-			memObject[1] = clCreateBuffer(context, CL_MEM_READ_WRITE,
-					Sizeof.cl_uint * length, null, null);
-
-			// first create an iterator array
-			clSetKernelArg(kernelIterator, 0, Sizeof.cl_mem,
-					Pointer.to(memObject[1]));
-			clEnqueueNDRangeKernel(queue, kernelIterator, 1, null,
-					new long[] { length }, DEFAULT_LOCAL_WORKSIZE, 0, null,
-					null);
-			// make sure iterator array is filled
-			clEnqueueBarrier(queue);
-
-			clSetKernelArg(kernelMinimumThreshold, 0, Sizeof.cl_mem,
-					Pointer.to(memObject[0]));
-			clSetKernelArg(kernelMinimumThreshold, 1, Sizeof.cl_mem,
-					Pointer.to(memObject[1]));
-			clSetKernelArg(kernelMinimumThreshold, 2, Sizeof.cl_uint,
-					Pointer.to(new int[] { length }));
-
-			long globalWorkSize = Integers.nearestBinary(length);
-			for (int pass = 0; globalWorkSize > 1; pass++) {
-				clSetKernelArg(kernelMinimumThreshold, 3, Sizeof.cl_uint,
-						Pointer.to(new int[] { pass }));
-				clEnqueueNDRangeKernel(queue, kernelMinimumThreshold, 1, null,
-						new long[] { globalWorkSize >>= 1 },
-						DEFAULT_LOCAL_WORKSIZE, 0, null, null);
-				clEnqueueBarrier(queue);
-			}
-
-			// Read only the first values
-			final float[] resultFloat = new float[1];
-			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0,
-					Sizeof.cl_float, Pointer.to(resultFloat), 0, null, null);
-
-			final int[] resultPosition = new int[1];
-			clEnqueueReadBuffer(queue, memObject[1], CL_TRUE, 0,
-					Sizeof.cl_uint, Pointer.to(resultPosition), 0, null, null);
-
-			if (resultFloat[0] < threshold) {
-				return resultPosition[0];
-			}
-
+		final MinimumPosition minimumPosition = minimumWithPosition(context,
+				queue, floats);
+		if (minimumPosition.getValue() > threshold) {
 			return NOT_FOUND;
-		} finally {
-			// Release memory objects, kernel and program
-			clReleaseMemObject(memObject[0]);
-			clReleaseMemObject(memObject[1]);
-			clReleaseKernel(kernelIterator);
-			clReleaseKernel(kernelMinimumThreshold);
-			clReleaseProgram(program);
 		}
+
+		return minimumPosition.getPosition();
+	}
+
+	/**
+	 * Returns the position of the minimum value in an array
+	 * 
+	 * <p>
+	 * If there are multiple minima (identical values), then the position of the
+	 * first minimum is returned.
+	 * 
+	 * @param context
+	 *            the context
+	 * @param queue
+	 *            the queue
+	 * @param floats
+	 *            the floats
+	 * @return the position of the minimum
+	 */
+	public static int positionOfMinimum(final cl_context context,
+			final cl_command_queue queue, final float[] floats) {
+		return minimumWithPosition(context, queue, floats).getPosition();
+	}
+
+	static class MinimumPosition {
+
+		private final float value;
+		private final int position;
+
+		public MinimumPosition(final float value, final int position) {
+			super();
+			this.value = value;
+			this.position = position;
+		}
+
+		public float getValue() {
+			return value;
+		}
+
+		public int getPosition() {
+			return position;
+		}
+
 	}
 }
