@@ -78,7 +78,7 @@ public class Kernels {
 			clSetKernelArg(kernel, 1, Sizeof.cl_uint,
 					Pointer.to(new int[] { length }));
 
-			long globalWorkSize = Integers.nearestBinary(length);
+			long globalWorkSize = Integers.nextBinary(length);
 			for (int pass = 0; globalWorkSize > 1; pass++) {
 				clSetKernelArg(kernel, 2, Sizeof.cl_uint,
 						Pointer.to(new int[] { pass }));
@@ -141,7 +141,7 @@ public class Kernels {
 			clSetKernelArg(kernel, 1, Sizeof.cl_uint,
 					Pointer.to(new int[] { length }));
 
-			long globalWorkSize = Integers.nearestBinary(length);
+			long globalWorkSize = Integers.nextBinary(length);
 			for (int pass = 0; globalWorkSize > 1; pass++) {
 				clSetKernelArg(kernel, 2, Sizeof.cl_uint,
 						Pointer.to(new int[] { pass }));

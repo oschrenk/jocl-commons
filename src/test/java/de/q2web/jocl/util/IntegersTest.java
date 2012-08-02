@@ -16,11 +16,11 @@ public class IntegersTest {
 
 	@Test
 	public void testNearestBinary() {
-		assertEquals(2, Integers.nearestBinary(2));
-		assertEquals(4, Integers.nearestBinary(3));
-		assertEquals(4, Integers.nearestBinary(4));
-		assertEquals(8, Integers.nearestBinary(5));
-		assertEquals(16, Integers.nearestBinary(10));
-		assertEquals(16, Integers.nearestBinary(16));
+		assertEquals(2, Integers.nextBinary(2));
+		assertEquals(4, Integers.nextBinary(3));
+		assertEquals(4, Integers.nextBinary(4));
+		assertEquals(8, Integers.nextBinary(5));
+		assertEquals(16, Integers.nextBinary(10));
+		assertEquals(16, Integers.nextBinary(16));
 	}
 }

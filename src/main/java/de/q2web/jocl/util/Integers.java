@@ -30,7 +30,7 @@ public class Integers {
 	}
 
 	/**
-	 * Fast computation of the nearest binary number equal or greater than x
+	 * Fast computation of the next binary number equal or greater than x
 	 * 
 	 * <p>
 	 * Not defined for <code>x <= 1</code>
@@ -38,7 +38,7 @@ public class Integers {
 	 * @param x
 	 * @return
 	 */
-	public static int nearestBinary(int x) {
+	public static int nextBinary(int x) {
 		x--;
 		x |= x >> 1;
 		x |= x >> 2;
