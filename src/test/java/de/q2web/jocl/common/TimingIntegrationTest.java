@@ -49,7 +49,7 @@ import de.q2web.jocl.util.Duration;
  *
  * @author Oliver Schrenk <oliver.schrenk@q2web.de>
  */
-public class TimingTest {
+public class TimingIntegrationTest {
 
 	private static final int LENGTH = 10000000;
 	private static final int UPPER_BOUND = 100;
