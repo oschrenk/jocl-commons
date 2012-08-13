@@ -1,6 +1,7 @@
 package de.q2web.jocl.common;
 
 import static org.jocl.CL.CL_MEM_COPY_HOST_PTR;
+import static org.jocl.CL.CL_MEM_READ_ONLY;
 import static org.jocl.CL.CL_MEM_READ_WRITE;
 import static org.jocl.CL.CL_TRUE;
 import static org.jocl.CL.clBuildProgram;
@@ -28,25 +29,26 @@ import de.q2web.jocl.util.Resources;
 
 public class Kernels {
 
+	private static final String SOURCE = Resources
+			.convertStreamToString(Kernels.class
+					.getResourceAsStream("commonKernels.cl"));
+
 	private static final long[] DEFAULT_LOCAL_WORKSIZE = new long[] { 1 };
 
 	private static final int NOT_FOUND = -1;
 
 	private static final String KERNEL_MINIMUM_FLOAT = "minimumFloat";
 	private static final String KERNEL_MINIMUM_FLOAT_WITH_POSITION = "minimumWithPositionFloat";
-
-	private static final String SOURCE = Resources
-			.convertStreamToString(Kernels.class
-					.getResourceAsStream("commonKernels.cl"));
+	private static final String KERNEL_EMPTY_INTS = "emptyInts";
 
 	/**
 	 * Returns the the minimum value and the position of that minimum of a float
 	 * array
-	 * 
+	 *
 	 * <p>
 	 * If there are multiple minima (identical values), then the position of the
 	 * first minimum is returned.
-	 * 
+	 *
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -106,11 +108,11 @@ public class Kernels {
 	/**
 	 * Returns the the minimum value and the position of that minimum of a float
 	 * array
-	 * 
+	 *
 	 * <p>
 	 * If there are multiple minima (identical values), then the position of the
 	 * first minimum is returned.
-	 * 
+	 *
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -169,11 +171,11 @@ public class Kernels {
 	 * Returns the position of the minimum value of a
 	 * <code>float<code> array if it is below a
 	 * certain threshold otherwise <code>-1</code>
-	 * 
+	 *
 	 * <p>
 	 * If there are multiple minima (identical values), then the position of the
 	 * first minimum is returned.
-	 * 
+	 *
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -199,11 +201,11 @@ public class Kernels {
 
 	/**
 	 * Returns the position of the minimum value in an array
-	 * 
+	 *
 	 * <p>
 	 * If there are multiple minima (identical values), then the position of the
 	 * first minimum is returned.
-	 * 
+	 *
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -215,6 +217,58 @@ public class Kernels {
 	public static int positionOfMinimum(final cl_context context,
 			final cl_command_queue queue, final float[] floats) {
 		return minimumWithPosition(context, queue, floats).getPosition();
+	}
+
+	/**
+	 * Returns <code>true</code> if array is empty, <code>false</code>
+	 * otherwise.
+	 *
+	 * @param context
+	 *            the context
+	 * @param queue
+	 *            the queues
+	 * @param ints
+	 *            the ints
+	 * @return <code>true</code> if successful
+	 */
+	public static boolean isEmpty(final cl_context context,
+			final cl_command_queue queue, final int[] ints) {
+		cl_program program = null;
+		cl_kernel kernel = null;
+		cl_mem[] memObject = null;
+		try {
+			final int length = ints.length;
+			program = clCreateProgramWithSource(context, 1,
+					new String[] { SOURCE }, null, null);
+			clBuildProgram(program, 0, null, null, null, null);
+			kernel = clCreateKernel(program, KERNEL_EMPTY_INTS, null);
+			final int[] resultArray = new int[] { 0 };
+
+			memObject = new cl_mem[2];
+			memObject[0] = clCreateBuffer(context, CL_MEM_READ_ONLY
+					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_int * length,
+					Pointer.to(ints), null);
+			memObject[1] = clCreateBuffer(context, CL_MEM_READ_WRITE
+					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_int,
+					Pointer.to(resultArray), null);
+
+			clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memObject[0]));
+			clSetKernelArg(kernel, 1, Sizeof.cl_mem, Pointer.to(memObject[1]));
+			clEnqueueNDRangeKernel(queue, kernel, 1, null,
+					new long[] { length }, DEFAULT_LOCAL_WORKSIZE, 0, null,
+					null);
+
+			clEnqueueReadBuffer(queue, memObject[1], CL_TRUE, 0, Sizeof.cl_int,
+					Pointer.to(resultArray), 0, null, null);
+
+			return resultArray[0] == 0;
+
+		} finally {
+			// Release memory objects, kernel and program
+			clReleaseMemObject(memObject[0]);
+			clReleaseKernel(kernel);
+			clReleaseProgram(program);
+		}
 	}
 
 	static class MinimumPosition {
@@ -235,6 +289,6 @@ public class Kernels {
 		public int getPosition() {
 			return position;
 		}
-
 	}
+
 }

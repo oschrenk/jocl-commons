@@ -4,6 +4,7 @@ import static org.jocl.CL.CL_DEVICE_TYPE_GPU;
 import static org.jocl.CL.clReleaseCommandQueue;
 import static org.jocl.CL.clReleaseContext;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.jocl.cl_command_queue;
@@ -29,11 +30,11 @@ public class KernelIntegrationTest {
 	public void testMinimum() {
 		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
 		final cl_device_id deviceId = Devices.getDevices(platformId,
-				CL_DEVICE_TYPE_GPU).get(0);
+			CL_DEVICE_TYPE_GPU).get(0);
 		final cl_context context = Contexts.create(platformId, deviceId);
 		final cl_command_queue queue = CommandQueues.create(context, deviceId);
 		try {
-			final float[] floats = Arrays.random(10000000, -180, 180);
+			final float[] floats = Arrays.random(10000000, -180f, 180f);
 			final Stopwatch stopwatch = new Stopwatch();
 
 			stopwatch.start();
@@ -57,4 +58,44 @@ public class KernelIntegrationTest {
 		}
 	}
 
+	@Test
+	public void testEmpty() {
+		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		final cl_device_id deviceId = Devices.getDevices(platformId,
+			CL_DEVICE_TYPE_GPU).get(0);
+		final cl_context context = Contexts.create(platformId, deviceId);
+		final cl_command_queue queue = CommandQueues.create(context, deviceId);
+		try {
+			final int length = 10000000;
+			final Random random = new Random();
+			final int r=  random.nextInt(length)+1;
+
+			final int[] ints = Arrays.prefilled(length, 0);
+			ints[r]=1;
+			final Stopwatch stopwatch = new Stopwatch();
+
+			stopwatch.start();
+			for(final int i : ints) {
+				if (i!=0){
+					break;
+				}
+			}
+			final long elapsedTimeJava = stopwatch
+					.elapsedTime(TimeUnit.NANOSECONDS);
+			stopwatch.reset();
+
+			stopwatch.start();
+			Kernels.isEmpty(context, queue, ints);
+			final long elapsedTimeJocl = stopwatch
+					.elapsedTime(TimeUnit.NANOSECONDS);
+			stopwatch.reset();
+
+			System.out.println("Java: " + Duration.of(elapsedTimeJava));
+			System.out.println("JOCL: " + Duration.of(elapsedTimeJocl));
+
+		} finally {
+			clReleaseCommandQueue(queue);
+			clReleaseContext(context);
+		}
+	}
 }

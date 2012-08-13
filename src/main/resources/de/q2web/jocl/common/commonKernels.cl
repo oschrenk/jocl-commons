@@ -169,3 +169,26 @@ __kernel void iterator(
 	uint i = get_global_id(0);
 	((__global uint*)io)[i] = i;
 }
+
+/**
+ * Checks if the array <code>io</code> is all <code>0</code>, if
+ * <code>true</code> <code>result[0]</code> will be <code>0</code> otherwise
+ * <code>1</code>.
+ *
+ * <p> 
+ * Write access to <code>result[0]</code> will be concurrent, but as only the
+ * same result will be written into it, it doesn't matter which thread wins.
+ *
+ * @param io
+ *			read/write uint array
+ */
+__kernel void emptyInts(
+	__global uint* io,
+	__global uint* result
+) {
+	uint i = get_global_id(0);
+	
+	if (((__global uint*)io)[i] > 0) {
+		result[0] = 1;
+	}
+}
