@@ -1,10 +1,16 @@
 package de.q2web.jocl.util;
 
+/**
+ * Fast Integer operations.
+ *
+ * @author Oliver Schrenk <oliver.schrenk@q2web.de>
+ *
+ */
 public class Integers {
 
 	/**
 	 * Fast computation of ceil(log_2(x)) for integer
-	 * 
+	 *
 	 * @param number
 	 * @return <code>0</code> for <code>0</code>, log_2(int)
 	 */
@@ -31,10 +37,10 @@ public class Integers {
 
 	/**
 	 * Fast computation of the next binary number equal or greater than x
-	 * 
+	 *
 	 * <p>
 	 * Not defined for <code>x <= 1</code>
-	 * 
+	 *
 	 * @param x
 	 * @return
 	 */

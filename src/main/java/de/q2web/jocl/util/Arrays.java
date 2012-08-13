@@ -4,6 +4,9 @@ import java.util.Random;
 
 /**
  * Offers static helper methods for arrays.
+ *
+ * @author Oliver Schrenk <oliver.schrenk@q2web.de>
+ *
  */
 public class Arrays {
 
@@ -12,7 +15,7 @@ public class Arrays {
 
 	/**
 	 * Prefilled.
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param value
@@ -27,7 +30,7 @@ public class Arrays {
 
 	/**
 	 * Prefilled.
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param value
@@ -42,7 +45,7 @@ public class Arrays {
 
 	/**
 	 * Prefilled.
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param value
@@ -57,7 +60,7 @@ public class Arrays {
 
 	/**
 	 * Prefilled.
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param value
@@ -72,7 +75,7 @@ public class Arrays {
 
 	/**
 	 * Prefilled.
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param value
@@ -87,7 +90,7 @@ public class Arrays {
 
 	/**
 	 * Prefilled.
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param value
@@ -102,7 +105,7 @@ public class Arrays {
 
 	/**
 	 * Prefilled.
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param value
@@ -117,7 +120,7 @@ public class Arrays {
 
 	/**
 	 * Prefilled.
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param value
@@ -132,7 +135,7 @@ public class Arrays {
 
 	/**
 	 * Position of minimum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -152,7 +155,7 @@ public class Arrays {
 
 	/**
 	 * Position of minimum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -172,7 +175,7 @@ public class Arrays {
 
 	/**
 	 * Position of minimum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -192,7 +195,7 @@ public class Arrays {
 
 	/**
 	 * Position of minimum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -212,7 +215,7 @@ public class Arrays {
 
 	/**
 	 * Position of minimum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -232,7 +235,7 @@ public class Arrays {
 
 	/**
 	 * Position of minimum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -252,7 +255,7 @@ public class Arrays {
 
 	/**
 	 * Position of maximum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -272,7 +275,7 @@ public class Arrays {
 
 	/**
 	 * Position of maximum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -292,7 +295,7 @@ public class Arrays {
 
 	/**
 	 * Position of maximum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -312,7 +315,7 @@ public class Arrays {
 
 	/**
 	 * Position of maximum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -332,7 +335,7 @@ public class Arrays {
 
 	/**
 	 * Position of maximum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -352,7 +355,7 @@ public class Arrays {
 
 	/**
 	 * Position of maximum.
-	 * 
+	 *
 	 * @param values
 	 *            the values
 	 * @return the int
@@ -371,9 +374,9 @@ public class Arrays {
 	}
 
 	/**
-	 * Fill an array with random ints between a lower and an upper bound. Both ends
-	 * being inlusive <code>[lowerBound, upperBound]</code>
-	 * 
+	 * Fill an array with random ints between a lower and an upper bound. Both
+	 * ends being inlusive <code>[lowerBound, upperBound]</code>
+	 *
 	 * @param length
 	 *            the length
 	 * @param lowerBound
@@ -383,11 +386,12 @@ public class Arrays {
 	 * @return the int[]
 	 */
 	public static int[] random(final int length, final int lowerBound,
-		final int upperBound) {
+			final int upperBound) {
 		final Random random = new Random();
 		final int values[] = new int[length];
 		for (int i = 0; i < values.length; i++) {
-			values[i] = random.nextInt(upperBound - lowerBound + 1) + lowerBound;
+			values[i] = random.nextInt(upperBound - lowerBound + 1)
+					+ lowerBound;
 
 		}
 		return values;
@@ -395,7 +399,7 @@ public class Arrays {
 
 	/**
 	 * Fill an array with random floats between a lower and an upper bound.
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param lowerBound
@@ -405,7 +409,7 @@ public class Arrays {
 	 * @return the float[]
 	 */
 	public static float[] random(final int length, final float lowerBound,
-		final float upperBound) {
+			final float upperBound) {
 		final Random random = new Random();
 		final float values[] = new float[length];
 		for (int i = 0; i < values.length; i++) {
@@ -417,7 +421,7 @@ public class Arrays {
 
 	/**
 	 * Fill an array with random doubles between a lower and an upper bound..
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param lowerBound
@@ -427,7 +431,7 @@ public class Arrays {
 	 * @return the double[]
 	 */
 	public static double[] random(final int length, final double lowerBound,
-		final double upperBound) {
+			final double upperBound) {
 		final Random random = new Random();
 		final double values[] = new double[length];
 		for (int i = 0; i < values.length; i++) {
@@ -439,7 +443,7 @@ public class Arrays {
 
 	/**
 	 * Fill an array with random floats that conform to gaussian distribution.
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param mean
@@ -449,7 +453,7 @@ public class Arrays {
 	 * @return the float[]
 	 */
 	public static float[] randomGaussian(final int length, final float mean,
-		final float variance) {
+			final float variance) {
 		final Random random = new Random();
 		final float values[] = new float[length];
 		for (int i = 0; i < values.length; i++) {
@@ -460,7 +464,7 @@ public class Arrays {
 
 	/**
 	 * Fill an array with random doubles that conform to gaussian distribution.
-	 * 
+	 *
 	 * @param length
 	 *            the length
 	 * @param mean
@@ -470,7 +474,7 @@ public class Arrays {
 	 * @return the double[]
 	 */
 	public static double[] randomGaussian(final int length, final double mean,
-		final double variance) {
+			final double variance) {
 		final Random random = new Random();
 		final double values[] = new double[length];
 		for (int i = 0; i < values.length; i++) {

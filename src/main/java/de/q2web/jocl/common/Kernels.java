@@ -27,18 +27,32 @@ import org.jocl.cl_program;
 import de.q2web.jocl.util.Integers;
 import de.q2web.jocl.util.Resources;
 
+/**
+ *
+ * OpenCl Kernels for common operatipons.
+ *
+ * @author Oliver Schrenk <oliver.schrenk@q2web.de>
+ *
+ */
 public class Kernels {
 
+	/** Source code of all kernels. */
 	private static final String SOURCE = Resources
 			.convertStreamToString(Kernels.class
 					.getResourceAsStream("commonKernels.cl"));
 
+	/** The Constant DEFAULT_LOCAL_WORKSIZE. */
 	private static final long[] DEFAULT_LOCAL_WORKSIZE = new long[] { 1 };
 
 	private static final int NOT_FOUND = -1;
 
+	/** The Constant KERNEL_MINIMUM_FLOAT. */
 	private static final String KERNEL_MINIMUM_FLOAT = "minimumFloat";
+
+	/** The Constant KERNEL_MINIMUM_FLOAT_WITH_POSITION. */
 	private static final String KERNEL_MINIMUM_FLOAT_WITH_POSITION = "minimumWithPositionFloat";
+
+	/** The Constant KERNEL_EMPTY_INTS. */
 	private static final String KERNEL_EMPTY_INTS = "emptyInts";
 
 	/**
@@ -271,21 +285,46 @@ public class Kernels {
 		}
 	}
 
+	/**
+	 * Container for minimum and position of the minumum of an array.
+	 *
+	 * @author Oliver Schrenk <oliver.schrenk@q2web.de>
+	 *
+	 * @see Kernels#minimumWithPosition(cl_context, cl_command_queue, float[])
+	 */
 	static class MinimumPosition {
 
 		private final float value;
 		private final int position;
 
-		public MinimumPosition(final float value, final int position) {
+		/**
+		 * Instantiates a new minimum position.
+		 *
+		 * @param value
+		 *            the value
+		 * @param position
+		 *            the position
+		 */
+		MinimumPosition(final float value, final int position) {
 			super();
 			this.value = value;
 			this.position = position;
 		}
 
+		/**
+		 * Gets the value.
+		 *
+		 * @return the value
+		 */
 		public float getValue() {
 			return value;
 		}
 
+		/**
+		 * Gets the position.
+		 *
+		 * @return the position
+		 */
 		public int getPosition() {
 			return position;
 		}

@@ -23,6 +23,12 @@ import com.google.common.primitives.Floats;
 import de.q2web.jocl.util.Arrays;
 import de.q2web.jocl.util.Duration;
 
+/**
+ * Test timings of common kernels.
+ *
+ * @author Oliver Schrenk <oliver.schrenk@q2web.de>
+ *
+ */
 public class KernelIntegrationTest {
 
 	@SuppressWarnings("unused")
@@ -30,7 +36,7 @@ public class KernelIntegrationTest {
 	public void testMinimum() {
 		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
 		final cl_device_id deviceId = Devices.getDevices(platformId,
-			CL_DEVICE_TYPE_GPU).get(0);
+				CL_DEVICE_TYPE_GPU).get(0);
 		final cl_context context = Contexts.create(platformId, deviceId);
 		final cl_command_queue queue = CommandQueues.create(context, deviceId);
 		try {
@@ -62,21 +68,21 @@ public class KernelIntegrationTest {
 	public void testEmpty() {
 		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
 		final cl_device_id deviceId = Devices.getDevices(platformId,
-			CL_DEVICE_TYPE_GPU).get(0);
+				CL_DEVICE_TYPE_GPU).get(0);
 		final cl_context context = Contexts.create(platformId, deviceId);
 		final cl_command_queue queue = CommandQueues.create(context, deviceId);
 		try {
 			final int length = 10000000;
 			final Random random = new Random();
-			final int r=  random.nextInt(length)+1;
+			final int r = random.nextInt(length) + 1;
 
 			final int[] ints = Arrays.prefilled(length, 0);
-			ints[r]=1;
+			ints[r] = 1;
 			final Stopwatch stopwatch = new Stopwatch();
 
 			stopwatch.start();
-			for(final int i : ints) {
-				if (i!=0){
+			for (final int i : ints) {
+				if (i != 0) {
 					break;
 				}
 			}

@@ -1,27 +1,3 @@
-/*
- *******************************************************************************
- * TransferTest.java
- * $Id: $
- *
- *******************************************************************************
- *
- * Copyright:   Q2WEB GmbH
- *              quality to the web
- *
- *              Tel  : +49 (0) 211 / 159694-00	Kronprinzenstr. 82-84
- *              Fax  : +49 (0) 211 / 159694-09	40217 Düsseldorf
- *              eMail: info@q2web.de						http://www.q2web.de
- *
- *
- * Author:      oliver.schrenk
- *
- * Created:     Aug 13, 2012
- *
- * Copyright (c) 2009 Q2WEB GmbH.
- * All rights reserved.
- *
- *******************************************************************************
- */
 package de.q2web.jocl.common;
 
 import static org.jocl.CL.CL_DEVICE_TYPE_GPU;
@@ -46,13 +22,19 @@ import de.q2web.jocl.util.Arrays;
 import de.q2web.jocl.util.Duration;
 
 /**
+ * Timing tests of JOCL operations.
  *
  * @author Oliver Schrenk <oliver.schrenk@q2web.de>
  */
 public class TimingIntegrationTest {
 
+	/** The Constant LENGTH. */
 	private static final int LENGTH = 10000000;
+
+	/** The Constant UPPER_BOUND. */
 	private static final int UPPER_BOUND = 100;
+
+	/** The Constant LOWER_BOUND. */
 	private static final int LOWER_BOUND = 0;
 
 	@Test

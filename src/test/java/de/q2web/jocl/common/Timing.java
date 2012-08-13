@@ -26,24 +26,45 @@ import org.jocl.cl_program;
 import de.q2web.jocl.util.Resources;
 
 /**
+ * Kernels for timing tests of JOCL operations.
  *
  * @author Oliver Schrenk <oliver.schrenk@q2web.de>
  */
 public class Timing {
 
+	/** Source code of all kernels. */
 	private static final String SOURCE = Resources
 			.convertStreamToString(Kernels.class
 					.getResourceAsStream("timingKernels.cl"));
 
+	/** The Constant KERNEL_NOOP. */
 	private static final String KERNEL_NOOP = "noop";
+
+	/** The Constant KERNEL_REWRITE. */
 	private static final String KERNEL_REWRITE = "rewrite";
+
+	/** The Constant KERNEL_WRITE_PLUS_ONE. */
 	private static final String KERNEL_WRITE_PLUS_ONE = "writePlusOne";
+
+	/** The Constant KERNEL_COMPARE_NOOP. */
 	private static final String KERNEL_COMPARE_NOOP = "compareNoOp";
+
+	/** The Constant KERNEL_COMPARE_REWRITE. */
 	private static final String KERNEL_COMPARE_REWRITE = "compareRewrite";
+
+	/** The Constant KERNEL_COMPARE_PLUS_ONE. */
 	private static final String KERNEL_COMPARE_PLUS_ONE = "comparePlusOne";
 
 	private static final long[] DEFAULT_LOCAL_WORKSIZE = new long[] { 1 };
 
+	/**
+	 * Creates a buffer of <code>int[]</code>, copies it onto a device
+	 *
+	 * @param context
+	 *            the context
+	 * @param ints
+	 *            the ints
+	 */
 	public static void createBuffer(final cl_context context, final int[] ints) {
 		final cl_program program = null;
 		final cl_kernel kernel = null;
@@ -62,6 +83,19 @@ public class Timing {
 		}
 	}
 
+	/**
+	 * Creates a buffer of <code>int[]</code>, copies it onto a device, and
+	 * reads it back within a given length.
+	 *
+	 * @param context
+	 *            the context
+	 * @param queue
+	 *            the queue
+	 * @param ints
+	 *            the ints
+	 * @param resultLength
+	 *            the result length
+	 */
 	public static void createAndReadBuffer(final cl_context context,
 			final cl_command_queue queue, final int[] ints,
 			final int resultLength) {
@@ -88,6 +122,20 @@ public class Timing {
 		}
 	}
 
+	/**
+	 * Creates a buffer of <code>int[]</code>, copies it onto a device, and
+	 * reads it back within a given length and spins up a kernel that does
+	 * nothing.
+	 *
+	 * @param context
+	 *            the context
+	 * @param queue
+	 *            the queue
+	 * @param ints
+	 *            the ints
+	 * @param resultLength
+	 *            the result length
+	 */
 	public static void noop(final cl_context context,
 			final cl_command_queue queue, final int[] ints,
 			final int resultLength) {
@@ -125,6 +173,20 @@ public class Timing {
 		}
 	}
 
+	/**
+	 * Creates a buffer of <code>int[]</code>, copies it onto a device, spins up
+	 * a kernel that writes an input array back to itself, and reads the result
+	 * back within a given length.
+	 *
+	 * @param context
+	 *            the context
+	 * @param queue
+	 *            the queue
+	 * @param ints
+	 *            the ints
+	 * @param resultLength
+	 *            the result length
+	 */
 	public static void rewrite(final cl_context context,
 			final cl_command_queue queue, final int[] ints,
 			final int resultLength) {
@@ -162,6 +224,20 @@ public class Timing {
 		}
 	}
 
+	/**
+	 * Creates a buffer of <code>int[]</code>, copies it onto a device, spins up
+	 * a kernel that writes an input array back to itself, adding <code>1</code>
+	 * to each bucket, and reads the result back within a given length.
+	 *
+	 * @param context
+	 *            the context
+	 * @param queue
+	 *            the queue
+	 * @param ints
+	 *            the ints
+	 * @param resultLength
+	 *            the result length
+	 */
 	public static void writePlusOne(final cl_context context,
 			final cl_command_queue queue, final int[] ints,
 			final int resultLength) {
@@ -199,6 +275,23 @@ public class Timing {
 		}
 	}
 
+	/**
+	 * Creates a buffer of <code>int[]</code>, copies it onto a device, spins up
+	 * a kernel that compares each bucket against a number, does nothing if
+	 * comparison succeeds (or fails), and reads the result back within a given
+	 * length.
+	 *
+	 * @param context
+	 *            the context
+	 * @param queue
+	 *            the queue
+	 * @param ints
+	 *            the ints
+	 * @param resultLength
+	 *            the result length
+	 * @param number
+	 *            the number
+	 */
 	public static void compareNoop(final cl_context context,
 			final cl_command_queue queue, final int[] ints,
 			final int resultLength, final int number) {
@@ -238,6 +331,23 @@ public class Timing {
 		}
 	}
 
+	/**
+	 * Creates a buffer of <code>int[]</code>, copies it onto a device, spins up
+	 * a kernel that compares itself each bucket against a number, writes the
+	 * bucket back to itself if comparison succeeds (and nothing if it fails),
+	 * and reads the result back within a given length.
+	 *
+	 * @param context
+	 *            the context
+	 * @param queue
+	 *            the queue
+	 * @param ints
+	 *            the ints
+	 * @param resultLength
+	 *            the result length
+	 * @param number
+	 *            the number
+	 */
 	public static void compareRewrite(final cl_context context,
 			final cl_command_queue queue, final int[] ints,
 			final int resultLength, final int number) {
@@ -277,6 +387,23 @@ public class Timing {
 		}
 	}
 
+	/**
+	 * Creates a buffer of <code>int[]</code>, copies it onto a device, spins up
+	 * a kernel that compares itself each bucket against a number, if the
+	 * comparison adds one to it, write the bucket back to itself (and nothing
+	 * if it fails), and reads the result back within a given length.
+	 *
+	 * @param context
+	 *            the context
+	 * @param queue
+	 *            the queue
+	 * @param ints
+	 *            the ints
+	 * @param resultLength
+	 *            the result length
+	 * @param number
+	 *            the number
+	 */
 	public static void comparePlusOne(final cl_context context,
 			final cl_command_queue queue, final int[] ints,
 			final int resultLength, final int number) {
