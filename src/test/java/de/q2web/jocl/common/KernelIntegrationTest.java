@@ -7,6 +7,7 @@ import static org.jocl.CL.clReleaseContext;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.jocl.CL;
 import org.jocl.cl_command_queue;
 import org.jocl.cl_context;
 import org.jocl.cl_device_id;
@@ -15,6 +16,7 @@ import org.jocl.utils.CommandQueues;
 import org.jocl.utils.Contexts;
 import org.jocl.utils.Devices;
 import org.jocl.utils.Platforms;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.base.Stopwatch;
@@ -25,11 +27,17 @@ import de.q2web.jocl.util.Duration;
 
 /**
  * Test timings of common kernels.
- *
+ * 
  * @author Oliver Schrenk <oliver.schrenk@q2web.de>
- *
+ * 
  */
 public class KernelIntegrationTest {
+
+	@BeforeClass
+	public static void setUp() {
+		// Enable exceptions and subsequently omit error checks in this sample
+		CL.setExceptionsEnabled(true);
+	}
 
 	@SuppressWarnings("unused")
 	@Test
