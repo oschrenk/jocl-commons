@@ -40,7 +40,7 @@
 	</scm>
 
 	<properties>
-		<version.jocl>0.1.7</version.jocl>
+		<version.jocl>0.1.8</version.jocl>
 		<version.jocl-utils>1.0</version.jocl-utils>
 		<version.junit>4.10</version.junit>
 
