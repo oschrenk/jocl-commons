@@ -3,6 +3,7 @@ package de.q2web.jocl.common;
 import static org.jocl.CL.CL_MEM_COPY_HOST_PTR;
 import static org.jocl.CL.CL_MEM_READ_ONLY;
 import static org.jocl.CL.CL_MEM_READ_WRITE;
+import static org.jocl.CL.CL_MEM_WRITE_ONLY;
 import static org.jocl.CL.CL_TRUE;
 import static org.jocl.CL.clBuildProgram;
 import static org.jocl.CL.clCreateBuffer;
@@ -27,7 +28,7 @@ import de.q2web.jocl.util.Resources;
 
 /**
  * Kernels for timing tests of JOCL operations.
- *
+ * 
  * @author Oliver Schrenk <oliver.schrenk@q2web.de>
  */
 public class Timing {
@@ -59,7 +60,7 @@ public class Timing {
 
 	/**
 	 * Creates a buffer of <code>int[]</code>, copies it onto a device
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param ints
@@ -72,21 +73,25 @@ public class Timing {
 		try {
 			final int length = ints.length;
 			memObject = new cl_mem[1];
-			memObject[0] = clCreateBuffer(context, CL_MEM_READ_ONLY
+			memObject[0] = clCreateBuffer(context, CL_MEM_WRITE_ONLY
 					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_int * length,
 					Pointer.to(ints), null);
 		} finally {
 			// Release memory objects, kernel and program
 			clReleaseMemObject(memObject[0]);
-			clReleaseKernel(kernel);
-			clReleaseProgram(program);
+			if (kernel != null) {
+				clReleaseKernel(kernel);
+			}
+			if (program != null) {
+				clReleaseProgram(program);
+			}
 		}
 	}
 
 	/**
 	 * Creates a buffer of <code>int[]</code>, copies it onto a device, and
 	 * reads it back within a given length.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -104,21 +109,27 @@ public class Timing {
 		cl_mem[] memObject = null;
 		try {
 			final int length = ints.length;
-			memObject = new cl_mem[2];
+			memObject = new cl_mem[1];
 			memObject[0] = clCreateBuffer(context, CL_MEM_READ_ONLY
 					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_int * length,
 					Pointer.to(ints), null);
-			memObject[1] = clCreateBuffer(context, CL_MEM_READ_ONLY,
-					Sizeof.cl_int * resultLength, Pointer.to(ints), null);
 
 			final int[] resultArray = new int[resultLength];
-			clEnqueueReadBuffer(queue, memObject[1], CL_TRUE, 0, Sizeof.cl_int
+			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0, Sizeof.cl_int
 					* resultLength, Pointer.to(resultArray), 0, null, null);
 		} finally {
 			// Release memory objects, kernel and program
-			clReleaseMemObject(memObject[0]);
-			clReleaseKernel(kernel);
-			clReleaseProgram(program);
+			for (cl_mem cl_mem : memObject) {
+				if (cl_mem != null) {
+					clReleaseMemObject(cl_mem);
+				}
+			}
+			if (kernel != null) {
+				clReleaseKernel(kernel);
+			}
+			if (program != null) {
+				clReleaseProgram(program);
+			}
 		}
 	}
 
@@ -126,7 +137,7 @@ public class Timing {
 	 * Creates a buffer of <code>int[]</code>, copies it onto a device, and
 	 * reads it back within a given length and spins up a kernel that does
 	 * nothing.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -149,12 +160,10 @@ public class Timing {
 			clBuildProgram(program, 0, null, null, null, null);
 			kernel = clCreateKernel(program, KERNEL_NOOP, null);
 
-			memObject = new cl_mem[2];
+			memObject = new cl_mem[1];
 			memObject[0] = clCreateBuffer(context, CL_MEM_READ_ONLY
 					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_int * length,
 					Pointer.to(ints), null);
-			memObject[1] = clCreateBuffer(context, CL_MEM_READ_ONLY,
-					Sizeof.cl_int * resultLength, Pointer.to(ints), null);
 
 			clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memObject[0]));
 			clEnqueueNDRangeKernel(queue, kernel, 1, null,
@@ -162,14 +171,21 @@ public class Timing {
 					null);
 
 			final int[] resultArray = new int[resultLength];
-			clEnqueueReadBuffer(queue, memObject[1], CL_TRUE, 0, Sizeof.cl_int
+			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0, Sizeof.cl_int
 					* resultLength, Pointer.to(resultArray), 0, null, null);
-
 		} finally {
 			// Release memory objects, kernel and program
-			clReleaseMemObject(memObject[0]);
-			clReleaseKernel(kernel);
-			clReleaseProgram(program);
+			for (cl_mem cl_mem : memObject) {
+				if (cl_mem != null) {
+					clReleaseMemObject(cl_mem);
+				}
+			}
+			if (kernel != null) {
+				clReleaseKernel(kernel);
+			}
+			if (program != null) {
+				clReleaseProgram(program);
+			}
 		}
 	}
 
@@ -177,7 +193,7 @@ public class Timing {
 	 * Creates a buffer of <code>int[]</code>, copies it onto a device, spins up
 	 * a kernel that writes an input array back to itself, and reads the result
 	 * back within a given length.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -200,12 +216,10 @@ public class Timing {
 			clBuildProgram(program, 0, null, null, null, null);
 			kernel = clCreateKernel(program, KERNEL_REWRITE, null);
 
-			memObject = new cl_mem[2];
+			memObject = new cl_mem[1];
 			memObject[0] = clCreateBuffer(context, CL_MEM_READ_ONLY
 					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_int * length,
 					Pointer.to(ints), null);
-			memObject[1] = clCreateBuffer(context, CL_MEM_READ_ONLY,
-					Sizeof.cl_int * resultLength, Pointer.to(ints), null);
 
 			clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memObject[0]));
 			clEnqueueNDRangeKernel(queue, kernel, 1, null,
@@ -213,14 +227,25 @@ public class Timing {
 					null);
 
 			final int[] resultArray = new int[resultLength];
-			clEnqueueReadBuffer(queue, memObject[1], CL_TRUE, 0, Sizeof.cl_int
+			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0, Sizeof.cl_int
 					* resultLength, Pointer.to(resultArray), 0, null, null);
 
 		} finally {
 			// Release memory objects, kernel and program
-			clReleaseMemObject(memObject[0]);
-			clReleaseKernel(kernel);
-			clReleaseProgram(program);
+			if (memObject != null) {
+				for (cl_mem cl_mem : memObject) {
+					if (cl_mem != null) {
+						clReleaseMemObject(cl_mem);
+					}
+				}
+			}
+
+			if (kernel != null) {
+				clReleaseKernel(kernel);
+			}
+			if (program != null) {
+				clReleaseProgram(program);
+			}
 		}
 	}
 
@@ -228,7 +253,7 @@ public class Timing {
 	 * Creates a buffer of <code>int[]</code>, copies it onto a device, spins up
 	 * a kernel that writes an input array back to itself, adding <code>1</code>
 	 * to each bucket, and reads the result back within a given length.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -251,12 +276,10 @@ public class Timing {
 			clBuildProgram(program, 0, null, null, null, null);
 			kernel = clCreateKernel(program, KERNEL_WRITE_PLUS_ONE, null);
 
-			memObject = new cl_mem[2];
+			memObject = new cl_mem[1];
 			memObject[0] = clCreateBuffer(context, CL_MEM_READ_WRITE
 					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_int * length,
 					Pointer.to(ints), null);
-			memObject[1] = clCreateBuffer(context, CL_MEM_READ_ONLY,
-					Sizeof.cl_int * resultLength, Pointer.to(ints), null);
 
 			clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memObject[0]));
 			clEnqueueNDRangeKernel(queue, kernel, 1, null,
@@ -264,14 +287,22 @@ public class Timing {
 					null);
 
 			final int[] resultArray = new int[resultLength];
-			clEnqueueReadBuffer(queue, memObject[1], CL_TRUE, 0, Sizeof.cl_int
+			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0, Sizeof.cl_int
 					* resultLength, Pointer.to(resultArray), 0, null, null);
 
 		} finally {
 			// Release memory objects, kernel and program
-			clReleaseMemObject(memObject[0]);
-			clReleaseKernel(kernel);
-			clReleaseProgram(program);
+			for (cl_mem cl_mem : memObject) {
+				if (cl_mem != null) {
+					clReleaseMemObject(cl_mem);
+				}
+			}
+			if (kernel != null) {
+				clReleaseKernel(kernel);
+			}
+			if (program != null) {
+				clReleaseProgram(program);
+			}
 		}
 	}
 
@@ -280,7 +311,7 @@ public class Timing {
 	 * a kernel that compares each bucket against a number, does nothing if
 	 * comparison succeeds (or fails), and reads the result back within a given
 	 * length.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -305,12 +336,10 @@ public class Timing {
 			clBuildProgram(program, 0, null, null, null, null);
 			kernel = clCreateKernel(program, KERNEL_COMPARE_NOOP, null);
 
-			memObject = new cl_mem[2];
+			memObject = new cl_mem[1];
 			memObject[0] = clCreateBuffer(context, CL_MEM_READ_WRITE
 					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_int * length,
 					Pointer.to(ints), null);
-			memObject[1] = clCreateBuffer(context, CL_MEM_READ_ONLY,
-					Sizeof.cl_int * resultLength, Pointer.to(ints), null);
 
 			clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memObject[0]));
 			clSetKernelArg(kernel, 1, Sizeof.cl_uint,
@@ -320,14 +349,22 @@ public class Timing {
 					null);
 
 			final int[] resultArray = new int[resultLength];
-			clEnqueueReadBuffer(queue, memObject[1], CL_TRUE, 0, Sizeof.cl_int
+			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0, Sizeof.cl_int
 					* resultLength, Pointer.to(resultArray), 0, null, null);
 
 		} finally {
 			// Release memory objects, kernel and program
-			clReleaseMemObject(memObject[0]);
-			clReleaseKernel(kernel);
-			clReleaseProgram(program);
+			for (cl_mem cl_mem : memObject) {
+				if (cl_mem != null) {
+					clReleaseMemObject(cl_mem);
+				}
+			}
+			if (kernel != null) {
+				clReleaseKernel(kernel);
+			}
+			if (program != null) {
+				clReleaseProgram(program);
+			}
 		}
 	}
 
@@ -336,7 +373,7 @@ public class Timing {
 	 * a kernel that compares itself each bucket against a number, writes the
 	 * bucket back to itself if comparison succeeds (and nothing if it fails),
 	 * and reads the result back within a given length.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -361,12 +398,10 @@ public class Timing {
 			clBuildProgram(program, 0, null, null, null, null);
 			kernel = clCreateKernel(program, KERNEL_COMPARE_REWRITE, null);
 
-			memObject = new cl_mem[2];
+			memObject = new cl_mem[1];
 			memObject[0] = clCreateBuffer(context, CL_MEM_READ_WRITE
 					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_int * length,
 					Pointer.to(ints), null);
-			memObject[1] = clCreateBuffer(context, CL_MEM_READ_ONLY,
-					Sizeof.cl_int * resultLength, Pointer.to(ints), null);
 
 			clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memObject[0]));
 			clSetKernelArg(kernel, 1, Sizeof.cl_uint,
@@ -376,14 +411,27 @@ public class Timing {
 					null);
 
 			final int[] resultArray = new int[resultLength];
-			clEnqueueReadBuffer(queue, memObject[1], CL_TRUE, 0, Sizeof.cl_int
+			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0, Sizeof.cl_int
 					* resultLength, Pointer.to(resultArray), 0, null, null);
 
 		} finally {
 			// Release memory objects, kernel and program
-			clReleaseMemObject(memObject[0]);
-			clReleaseKernel(kernel);
-			clReleaseProgram(program);
+			for (cl_mem cl_mem : memObject) {
+				if (cl_mem != null) {
+					clReleaseMemObject(cl_mem);
+				}
+			}
+			for (cl_mem cl_mem : memObject) {
+				if (cl_mem != null) {
+					clReleaseMemObject(cl_mem);
+				}
+			}
+			if (kernel != null) {
+				clReleaseKernel(kernel);
+			}
+			if (program != null) {
+				clReleaseProgram(program);
+			}
 		}
 	}
 
@@ -392,7 +440,7 @@ public class Timing {
 	 * a kernel that compares itself each bucket against a number, if the
 	 * comparison adds one to it, write the bucket back to itself (and nothing
 	 * if it fails), and reads the result back within a given length.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -417,12 +465,10 @@ public class Timing {
 			clBuildProgram(program, 0, null, null, null, null);
 			kernel = clCreateKernel(program, KERNEL_COMPARE_PLUS_ONE, null);
 
-			memObject = new cl_mem[2];
+			memObject = new cl_mem[1];
 			memObject[0] = clCreateBuffer(context, CL_MEM_READ_WRITE
 					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_int * length,
 					Pointer.to(ints), null);
-			memObject[1] = clCreateBuffer(context, CL_MEM_READ_ONLY,
-					Sizeof.cl_int * resultLength, Pointer.to(ints), null);
 
 			clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memObject[0]));
 			clSetKernelArg(kernel, 1, Sizeof.cl_uint,
@@ -432,14 +478,22 @@ public class Timing {
 					null);
 
 			final int[] resultArray = new int[resultLength];
-			clEnqueueReadBuffer(queue, memObject[1], CL_TRUE, 0, Sizeof.cl_int
+			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0, Sizeof.cl_int
 					* resultLength, Pointer.to(resultArray), 0, null, null);
 
 		} finally {
 			// Release memory objects, kernel and program
-			clReleaseMemObject(memObject[0]);
-			clReleaseKernel(kernel);
-			clReleaseProgram(program);
+			for (cl_mem cl_mem : memObject) {
+				if (cl_mem != null) {
+					clReleaseMemObject(cl_mem);
+				}
+			}
+			if (kernel != null) {
+				clReleaseKernel(kernel);
+			}
+			if (program != null) {
+				clReleaseProgram(program);
+			}
 		}
 	}
 }

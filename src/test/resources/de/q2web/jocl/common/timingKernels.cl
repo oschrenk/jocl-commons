@@ -45,7 +45,7 @@ __kernel void rewrite(
 	__global uint* io
 ) {
 	uint i = get_global_id(0);
-	((__global uint*)io)[i] = ((__global uint*)io)[i]
+	((__global uint*)io)[i] = ((__global uint*)io)[i];
 }
 
 /**
@@ -58,7 +58,7 @@ __kernel void writePlusOne(
 	__global uint* io
 ) {
 	uint i = get_global_id(0);
-	((__global uint*)io)[i] = ((__global uint*)io)[i]
+	((__global uint*)io)[i] = ((__global uint*)io)[i];
 }
 
 /**
@@ -91,7 +91,7 @@ __kernel void compareRewrite(
 ) {
 	uint i = get_global_id(0);
 	if (((__global uint*)io)[i] > compare) {
-		((__global uint*)io)[i] = ((__global uint*)io)[i]
+		((__global uint*)io)[i] = ((__global uint*)io)[i];
 	}
 }
 
@@ -108,6 +108,6 @@ __kernel void comparePlusOne(
 ) {
 	uint i = get_global_id(0);
 	if (((__global uint*)io)[i] > compare) {
-		((__global uint*)io)[i] = ((__global uint*)io)[i] + 1
+		((__global uint*)io)[i] = ((__global uint*)io)[i] + 1;
 	}
 }

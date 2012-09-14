@@ -23,13 +23,13 @@ import de.q2web.jocl.util.Duration;
 
 /**
  * Timing tests of JOCL operations.
- *
+ * 
  * @author Oliver Schrenk <oliver.schrenk@q2web.de>
  */
 public class TimingIntegrationTest {
 
 	/** The Constant LENGTH. */
-	private static final int LENGTH = 10000000;
+	private static final int LENGTH = 300;
 
 	/** The Constant UPPER_BOUND. */
 	private static final int UPPER_BOUND = 100;
@@ -58,6 +58,7 @@ public class TimingIntegrationTest {
 
 		} finally {
 			clReleaseContext(context);
+
 		}
 	}
 
@@ -82,6 +83,7 @@ public class TimingIntegrationTest {
 
 		} finally {
 			clReleaseContext(context);
+
 		}
 	}
 
@@ -107,6 +109,7 @@ public class TimingIntegrationTest {
 
 		} finally {
 			clReleaseContext(context);
+
 		}
 	}
 
@@ -132,6 +135,7 @@ public class TimingIntegrationTest {
 
 		} finally {
 			clReleaseContext(context);
+
 		}
 	}
 
@@ -158,6 +162,7 @@ public class TimingIntegrationTest {
 
 		} finally {
 			clReleaseContext(context);
+
 		}
 	}
 
@@ -184,6 +189,7 @@ public class TimingIntegrationTest {
 
 		} finally {
 			clReleaseContext(context);
+
 		}
 	}
 
@@ -210,6 +216,7 @@ public class TimingIntegrationTest {
 
 		} finally {
 			clReleaseContext(context);
+
 		}
 	}
 
@@ -238,6 +245,7 @@ public class TimingIntegrationTest {
 
 		} finally {
 			clReleaseContext(context);
+
 		}
 	}
 
@@ -266,6 +274,7 @@ public class TimingIntegrationTest {
 
 		} finally {
 			clReleaseContext(context);
+
 		}
 	}
 
@@ -294,6 +303,7 @@ public class TimingIntegrationTest {
 
 		} finally {
 			clReleaseContext(context);
+
 		}
 	}
 
