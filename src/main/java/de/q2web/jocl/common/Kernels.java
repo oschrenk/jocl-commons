@@ -28,11 +28,11 @@ import de.q2web.jocl.util.Integers;
 import de.q2web.jocl.util.Resources;
 
 /**
- *
+ * 
  * OpenCl Kernels for common operatipons.
- *
+ * 
  * @author Oliver Schrenk <oliver.schrenk@q2web.de>
- *
+ * 
  */
 public class Kernels {
 
@@ -58,11 +58,11 @@ public class Kernels {
 	/**
 	 * Returns the the minimum value and the position of that minimum of a float
 	 * array
-	 *
+	 * 
 	 * <p>
 	 * If there are multiple minima (identical values), then the position of the
 	 * first minimum is returned.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -71,6 +71,7 @@ public class Kernels {
 	 *            the floats
 	 * @return the position of the minimum
 	 */
+	@SuppressWarnings("deprecation")
 	public static float minimum(final cl_context context,
 			final cl_command_queue queue, final float[] floats) {
 		cl_program program = null;
@@ -122,11 +123,11 @@ public class Kernels {
 	/**
 	 * Returns the the minimum value and the position of that minimum of a float
 	 * array
-	 *
+	 * 
 	 * <p>
 	 * If there are multiple minima (identical values), then the position of the
 	 * first minimum is returned.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -135,6 +136,7 @@ public class Kernels {
 	 *            the floats
 	 * @return the position of the minimum
 	 */
+	@SuppressWarnings("deprecation")
 	public static MinimumPosition minimumWithPosition(final cl_context context,
 			final cl_command_queue queue, final float[] floats) {
 		cl_program program = null;
@@ -185,11 +187,11 @@ public class Kernels {
 	 * Returns the position of the minimum value of a
 	 * <code>float<code> array if it is below a
 	 * certain threshold otherwise <code>-1</code>
-	 *
+	 * 
 	 * <p>
 	 * If there are multiple minima (identical values), then the position of the
 	 * first minimum is returned.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -215,11 +217,11 @@ public class Kernels {
 
 	/**
 	 * Returns the position of the minimum value in an array
-	 *
+	 * 
 	 * <p>
 	 * If there are multiple minima (identical values), then the position of the
 	 * first minimum is returned.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -236,7 +238,7 @@ public class Kernels {
 	/**
 	 * Returns <code>true</code> if array is empty, <code>false</code>
 	 * otherwise.
-	 *
+	 * 
 	 * @param context
 	 *            the context
 	 * @param queue
@@ -287,9 +289,9 @@ public class Kernels {
 
 	/**
 	 * Container for minimum and position of the minumum of an array.
-	 *
+	 * 
 	 * @author Oliver Schrenk <oliver.schrenk@q2web.de>
-	 *
+	 * 
 	 * @see Kernels#minimumWithPosition(cl_context, cl_command_queue, float[])
 	 */
 	static class MinimumPosition {
@@ -299,7 +301,7 @@ public class Kernels {
 
 		/**
 		 * Instantiates a new minimum position.
-		 *
+		 * 
 		 * @param value
 		 *            the value
 		 * @param position
@@ -313,7 +315,7 @@ public class Kernels {
 
 		/**
 		 * Gets the value.
-		 *
+		 * 
 		 * @return the value
 		 */
 		public float getValue() {
@@ -322,7 +324,7 @@ public class Kernels {
 
 		/**
 		 * Gets the position.
-		 *
+		 * 
 		 * @return the position
 		 */
 		public int getPosition() {

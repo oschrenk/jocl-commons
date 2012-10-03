@@ -279,6 +279,32 @@ public class TimingIntegrationTest {
 	}
 
 	@Test
+	public void testCompareRewriteFixedValues() {
+		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		final cl_device_id deviceId = Devices.getDevices(platformId,
+				CL_DEVICE_TYPE_GPU).get(0);
+		final cl_context context = Contexts.create(platformId, deviceId);
+		final cl_command_queue queue = CommandQueues.create(context, deviceId);
+		try {
+			final int length = LENGTH;
+			final int[] ints = Arrays.prefilled(length, 10);
+			final Stopwatch stopwatch = new Stopwatch();
+
+			stopwatch.start();
+			Timing.compareRewrite(context, queue, ints, LENGTH, 9);
+			final long elapsedTimeJocl = stopwatch
+					.elapsedTime(TimeUnit.NANOSECONDS);
+			stopwatch.reset();
+
+			System.out.println("Time: " + Duration.of(elapsedTimeJocl));
+
+		} finally {
+			clReleaseContext(context);
+
+		}
+	}
+
+	@Test
 	public void testComparePlusOne() {
 		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
 		final cl_device_id deviceId = Devices.getDevices(platformId,
