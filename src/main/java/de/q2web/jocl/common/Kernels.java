@@ -52,6 +52,8 @@ public class Kernels {
 	/** The Constant KERNEL_MINIMUM_FLOAT_WITH_POSITION. */
 	private static final String KERNEL_MINIMUM_FLOAT_WITH_POSITION = "minimumWithPositionFloat";
 
+	private static final String KERNEL_MAXIMUM_FLOAT_WITH_POSITION = "maximumWithPositionFloat";
+	
 	/** The Constant KERNEL_EMPTY_INTS. */
 	private static final String KERNEL_EMPTY_INTS = "emptyInts";
 
@@ -137,7 +139,58 @@ public class Kernels {
 	 * @return the position of the minimum
 	 */
 	@SuppressWarnings("deprecation")
-	public static MinimumPosition minimumWithPosition(final cl_context context,
+	public static ValuePosition maximumWithPositionAndOffset(final cl_context context,
+			final cl_command_queue queue, final float[] floats, int leftOffset,
+			int rightOffset) {
+		cl_program program = null;
+		cl_kernel kernel = null;
+		cl_mem[] memObject = null;
+		try {
+			final int length = floats.length;
+			program = clCreateProgramWithSource(context, 1,
+					new String[] { SOURCE }, null, null);
+			clBuildProgram(program, 0, null, null, null, null);
+			kernel = clCreateKernel(program,
+					KERNEL_MAXIMUM_FLOAT_WITH_POSITION, null);
+
+			memObject = new cl_mem[1];
+			memObject[0] = clCreateBuffer(context, CL_MEM_READ_WRITE
+					| CL_MEM_COPY_HOST_PTR, Sizeof.cl_float * length,
+					Pointer.to(floats), null);
+
+			clSetKernelArg(kernel, 0, Sizeof.cl_mem, Pointer.to(memObject[0]));
+			clSetKernelArg(kernel, 1, Sizeof.cl_uint,
+					Pointer.to(new int[] { leftOffset }));
+			clSetKernelArg(kernel, 2, Sizeof.cl_uint,
+					Pointer.to(new int[] { rightOffset }));
+
+			final int intervalLength = rightOffset - leftOffset + 1;
+			long globalWorkSize = Integers.nextBinary(intervalLength);
+			for (int pass = 0; globalWorkSize > 1; pass++) {
+				clSetKernelArg(kernel, 3, Sizeof.cl_uint,
+						Pointer.to(new int[] { pass }));
+				clEnqueueNDRangeKernel(queue, kernel, 1, null,
+						new long[] { globalWorkSize >>= 1 },
+						DEFAULT_LOCAL_WORKSIZE, 0, null, null);
+				clEnqueueBarrier(queue);
+			}
+
+			final float[] values = new float[2];
+			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, Sizeof.cl_float
+					* leftOffset, Sizeof.cl_float * 2, Pointer.to(values), 0,
+					null, null);
+
+			return new ValuePosition(values[0], (int) values[1]);
+
+		} finally {
+			// Release memory objects, kernel and program
+			clReleaseMemObject(memObject[0]);
+			clReleaseKernel(kernel);
+			clReleaseProgram(program);
+		}
+	}
+
+	public static ValuePosition minimumWithPosition(final cl_context context,
 			final cl_command_queue queue, final float[] floats) {
 		cl_program program = null;
 		cl_kernel kernel = null;
@@ -173,7 +226,7 @@ public class Kernels {
 			clEnqueueReadBuffer(queue, memObject[0], CL_TRUE, 0,
 					Sizeof.cl_float * 2, Pointer.to(values), 0, null, null);
 
-			return new MinimumPosition(values[0], (int) values[1]);
+			return new ValuePosition(values[0], (int) values[1]);
 
 		} finally {
 			// Release memory objects, kernel and program
@@ -206,7 +259,7 @@ public class Kernels {
 	public static int positionOfMinimum(final cl_context context,
 			final cl_command_queue queue, final float[] floats,
 			final float threshold) {
-		final MinimumPosition minimumPosition = minimumWithPosition(context,
+		final ValuePosition minimumPosition = minimumWithPosition(context,
 				queue, floats);
 		if (minimumPosition.getValue() > threshold) {
 			return NOT_FOUND;
@@ -294,7 +347,7 @@ public class Kernels {
 	 * 
 	 * @see Kernels#minimumWithPosition(cl_context, cl_command_queue, float[])
 	 */
-	static class MinimumPosition {
+	static class ValuePosition {
 
 		private final float value;
 		private final int position;
@@ -307,7 +360,7 @@ public class Kernels {
 		 * @param position
 		 *            the position
 		 */
-		MinimumPosition(final float value, final int position) {
+		ValuePosition(final float value, final int position) {
 			super();
 			this.value = value;
 			this.position = position;

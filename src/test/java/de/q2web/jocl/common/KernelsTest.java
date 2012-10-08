@@ -19,11 +19,11 @@ import org.jocl.utils.Platforms;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.q2web.jocl.common.Kernels.MinimumPosition;
+import de.q2web.jocl.common.Kernels.ValuePosition;
 
 /**
  * Test common kernels.
- *
+ * 
  * @author Oliver Schrenk <oliver.schrenk@q2web.de>
  */
 public class KernelsTest {
@@ -66,10 +66,102 @@ public class KernelsTest {
 		try {
 			final float expectedMinimum = 10;
 			final float[] floats = { 70f, 60f, expectedMinimum, 40f, 50f, 80f };
-			final MinimumPosition minimumPosition = Kernels
-					.minimumWithPosition(context, queue, floats);
+			final ValuePosition minimumPosition = Kernels.minimumWithPosition(
+					context, queue, floats);
 			assertEquals(expectedMinimum, minimumPosition.getValue(), 0.0);
 			assertEquals(2, minimumPosition.getPosition());
+
+		} finally {
+			clReleaseCommandQueue(queue);
+			clReleaseContext(context);
+		}
+	}
+
+	@Test
+	public void testMaximumWithPosition() {
+
+		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		final cl_device_id deviceId = Devices.getDevices(platformId,
+				CL_DEVICE_TYPE_GPU).get(0);
+		final cl_context context = Contexts.create(platformId, deviceId);
+		final cl_command_queue queue = CommandQueues.create(context, deviceId);
+		try {
+			final float expectedMaximum = 90;
+			final float[] floats = { 70f, 60f, expectedMaximum, 40f, 50f, 80f };
+			final ValuePosition valuePosition = Kernels
+					.maximumWithPositionAndOffset(context, queue, floats, 0,
+							floats.length - 1);
+			assertEquals(expectedMaximum, valuePosition.getValue(), 0.0);
+			assertEquals(2, valuePosition.getPosition());
+
+		} finally {
+			clReleaseCommandQueue(queue);
+			clReleaseContext(context);
+		}
+	}
+
+	@Test
+	public void testMaximumWithPositionAndInterval() {
+		testMaximumWithPositionAndInterval(0, 5);
+		testMaximumWithPositionAndInterval(1, 5);
+		testMaximumWithPositionAndInterval(2, 5);
+		testMaximumWithPositionAndInterval(2, 4);
+		testMaximumWithPositionAndInterval(2, 3);
+	}
+
+	public void testMaximumWithPositionAndInterval(int leftOffset,
+			int rightOffset) {
+
+		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		final cl_device_id deviceId = Devices.getDevices(platformId,
+				CL_DEVICE_TYPE_GPU).get(0);
+		final cl_context context = Contexts.create(platformId, deviceId);
+		final cl_command_queue queue = CommandQueues.create(context, deviceId);
+		try {
+			final float expectedMaximum = 90;
+			final float[] floats = { 70f, 60f, expectedMaximum, 40f, 50f, 80f };
+			final ValuePosition valuePosition = Kernels
+					.maximumWithPositionAndOffset(context, queue, floats,
+							leftOffset, rightOffset);
+			assertEquals(expectedMaximum, valuePosition.getValue(), 0.0);
+			assertEquals(2, valuePosition.getPosition());
+
+		} finally {
+			clReleaseCommandQueue(queue);
+			clReleaseContext(context);
+		}
+	}
+
+	@Test
+	public void testMaximumWithPositionAndInterval2() {
+		// testMaximumWithPositionAndInterval2(0, 6);
+		// testMaximumWithPositionAndInterval2(1, 6);
+		// testMaximumWithPositionAndInterval2(2, 6);
+		// testMaximumWithPositionAndInterval2(0, 5);
+		// testMaximumWithPositionAndInterval2(1, 5);
+		// testMaximumWithPositionAndInterval2(2, 5);
+		// testMaximumWithPositionAndInterval2(2, 4);
+		// // testMaximumWithPositionAndInterval2(2, 3);
+		testMaximumWithPositionAndInterval2(2, 2);
+	}
+
+	public void testMaximumWithPositionAndInterval2(int leftOffset,
+			int rightOffset) {
+
+		final cl_platform_id platformId = Platforms.getPlatforms().get(0);
+		final cl_device_id deviceId = Devices.getDevices(platformId,
+				CL_DEVICE_TYPE_GPU).get(0);
+		final cl_context context = Contexts.create(platformId, deviceId);
+		final cl_command_queue queue = CommandQueues.create(context, deviceId);
+		try {
+			final float expectedMaximum = 90;
+			final float[] floats = { 70f, 60f, expectedMaximum, 40f, 50f, 80f,
+					60f };
+			final ValuePosition valuePosition = Kernels
+					.maximumWithPositionAndOffset(context, queue, floats,
+							leftOffset, rightOffset);
+			assertEquals(expectedMaximum, valuePosition.getValue(), 0.0);
+			assertEquals(2, valuePosition.getPosition());
 
 		} finally {
 			clReleaseCommandQueue(queue);
@@ -88,8 +180,8 @@ public class KernelsTest {
 		try {
 			final float minimum = 10;
 			final float[] floats = { 70f, 60f, 90f, 40f, 50f, 80f, minimum };
-			final MinimumPosition minimumPosition = Kernels
-					.minimumWithPosition(context, queue, floats);
+			final ValuePosition minimumPosition = Kernels.minimumWithPosition(
+					context, queue, floats);
 			assertEquals(minimum, minimumPosition.getValue(), 0.0);
 			assertEquals(6, minimumPosition.getPosition());
 
@@ -110,8 +202,8 @@ public class KernelsTest {
 		try {
 			final float expectedMinimum = 10;
 			final float[] floats = { 70f, 60f, 40f, 50f, 80f, expectedMinimum };
-			final MinimumPosition minimumPosition = Kernels
-					.minimumWithPosition(context, queue, floats);
+			final ValuePosition minimumPosition = Kernels.minimumWithPosition(
+					context, queue, floats);
 			assertEquals(expectedMinimum, minimumPosition.getValue(), 0.0);
 			assertEquals(5, minimumPosition.getPosition());
 

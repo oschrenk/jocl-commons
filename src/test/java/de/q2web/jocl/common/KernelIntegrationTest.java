@@ -48,7 +48,7 @@ public class KernelIntegrationTest {
 		final cl_context context = Contexts.create(platformId, deviceId);
 		final cl_command_queue queue = CommandQueues.create(context, deviceId);
 		try {
-			final float[] floats = Arrays.random(10000000, -180f, 180f);
+			final float[] floats = Arrays.random(10000, -180f, 180f);
 			final Stopwatch stopwatch = new Stopwatch();
 
 			stopwatch.start();
